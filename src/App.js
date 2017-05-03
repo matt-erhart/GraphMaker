@@ -4,28 +4,26 @@ import Rx from 'rxjs'
 import _ from 'lodash'
 import uid from 'uid-safe'
 import ram from 'ramda'
-
-const ZoomDivContainer = styled.div`
-  width:  ${props => props.width};
-  height: ${props => props.height};
-  overflow: 'hidden';
-  border: '1px solid black'
-
-`
-let subj = new Rx.Subject();
+import NodeDiv from './NodeDiv'
+import TextArea from './TextArea'
+import ZoomContainer from './ZoomContainer'
+import {buttonFromNum, subj} from './constants'
+import PropTypes from 'prop-types'
 
 class Figure extends React.Component {
     state = {
-      scale: 1,
-      width: 1500,
-      height: 1000,
-      x: 0,
-      y: 0,
+      zoomScaleFactor: 1,
+      graphWidth: 1500, 
+      graphHeight: 1000, 
+      panX: 0, 
+      panY: 0, 
       circles: {}, // {'id': {id: 'id', x:, y:, r:, fill}}
       lines: {}, // {'id': {id: 'id', x1:, y1:, x2:, y2:}}
       links: {},
-      selected: []
-    }
+      selected: [],
+      nodes: {}, // {id: {id: ..., x,y,width,height, title?, metadata?, tags?, type? }} //everything will be positioned relative to nodes
+      dragStart: {x: 0, y: 0}
+  }
     newCircle = (id, x, y, r) => {
 
     }
@@ -39,81 +37,59 @@ class Figure extends React.Component {
     }
 
     componentWillMount(){
-      let newCircle = (down, distance) => ({id: 'circle-' + uid.sync(8), x: down.offsetX, y: down.offsetY, r: distance, stroke: 'black'});
-      let mouseDown$ = subj.filter(action => action.type === 'mouseDown').map(down => {
-        let circ = newCircle(down, 1);
-        this.addCircle(this.state, circ)
-        return circ
-      })
+      const {subj} = this.context;
+      const newNode = (click) => ({id: 'node-' + uid.sync(8), x: click.offsetX, y: click.offsetY, text: ''});
+      // let mouseDown$ = subj.filter(action => action.type === 'LeftDown').map(down => {
+      //   let circ = newCircle(down, 1);
+      //   this.addCircle(this.state, circ)
+      //   return circ
+      // })
       let mouseUp$   = subj.filter(action => action.type === 'mouseUp');
       let mouseMove$ = subj.filter(action => action.type === 'mouseMove');
-      let circleRightDown$ = subj.filter(action => action.type === 'circleRightDown').subscribe(x=>console.log('circ',x))
-      let downUpDist$ = (circ) => mouseMove$.takeUntil(mouseUp$).map(move => Math.abs(circ.x-move.offsetX));
-      mouseDown$.mergeMap(circ => downUpDist$(circ).do(distance => {circ.r = distance; this.addCircle(this.state, circ)}))
-      .subscribe(x => console.log());
+      let clickBG$   = subj.filter(action => action.type === 'click-background');
+      let addNode$ = clickBG$.do(click => {
+        let node = newNode(click);
+        this.setState({nodes: {...this.state.nodes, [node.id]: node }});
+      })
+
+      let select$ = subj.filter(action => action.type === 'select')
+      //'nodeMouseUp' 'dragStart' 'select' 'link'
+      let dragStart$ = subj.filter(action => action.type === 'dragStart');
+      let dnd$ = dragStart$.mergeMap(action => mouseMove$.takeUntil(mouseUp$).do(moveData => {
+          let {x,y} = this.state.dragStart;
+          let oldNode = this.state.nodes[action.id]
+          let dx = moveData.clientX-action.clientX;
+          let dy = moveData.clientY-action.clientY;
+          console.log(dx,dy)
+          let newNode = {...oldNode, x: x+dx, y: y+dy};
+          this.setState({nodes: {...this.state.nodes, [action.id]: newNode}});
+          console.log(this.state.nodes[action.id])
+      }))
+      Rx.Observable.merge(addNode$,dnd$).subscribe(x => console.log(x));
+
+
+      // let circleRightDown$ = subj.filter(action => action.type === 'circleRightDown').subscribe(x=>console.log('circ',x))
+      // let downUpDist$ = (circ) => mouseMove$.takeUntil(mouseUp$).map(move => Math.abs(circ.x-move.offsetX));
+      // mouseDown$.mergeMap(circ => downUpDist$(circ).do(distance => {circ.r = distance; this.addCircle(this.state, circ)}))
+      
+      // subj.subscribe(x=>console.log(x))
     
     }
 
     componentDidUpdate(){
-      console.log(this.state.links)
+      // console.log(this.state.nodes)
     }
 
 
     render() {
-        const {x, y, scale, width, height, ...other} = this.state;
+        const {panX, panY, zoomScaleFactor, graphWidth, graphHeight, ...other} = this.state;
+        let {subj } = this.context;
+        let x = 100;
         return (
           <div>
-            <div>hey</div>
-            <div style={{width, height, overflow: 'hidden', border: '1px solid black'}} 
-              onClick={e => {
-                const { offsetX, offsetY } = e.nativeEvent
-                subj.next({ type: 'click-background', offsetX, offsetY })
-              }}
-            onMouseMove={e => {
-                const {offsetX, offsetY} = e.nativeEvent
-                subj.next({type: 'mouseMove', offsetX, offsetY})
-              }}
-              onMouseDown={e => {
-                const {offsetX, offsetY, button} = e.nativeEvent
-                console.log('in div')
-                subj.next({type: 'mouseDown', offsetX, offsetY})
-              }}
-              onContextMenu={e=> {
-                e.preventDefault()
-              }}
-              onMouseUp={e => {
-                const {offsetX, offsetY} = e.nativeEvent
-                subj.next({type: 'mouseUp', offsetX, offsetY})
-              }}
-
-              >
-              <div style={{transform: `scale(${scale}, ${scale}) translate(${x}px, ${y}px`, overflow: 'hidden'}}
-               width={width} height={height} {...other}>
-               <svg width={width} height={height}>
-                 {_.map(this.state.circles, (circle) => {
-                   return (
-                     <circle key={circle.id} cx={circle.x} cy={circle.y} r={circle.r} fill='blue' stroke={circle.stroke} strokeWidth={10} opacity={.5}
-                             onMouseDown={e => e.stopPropagation()}
-                             onContextMenu={e => e.preventDefault()}
-                             onClick={e => {
-                                e.stopPropagation();
-                                const {offsetX, offsetY, buttonNum} = e.nativeEvent; 
-                                const buttonFromNum = {0: 'Left', 1: 'Middle', 2:'Right'}
-                                let selectedCircle = {...circle, stroke: 'green'};
-                                if (this.state.selected.length === 1){
-                                  let newLink = {id: 'link-'+ uid.sync(8), source:this.state.selected[0], target: circle.id}
-                                    this.setState({links: {...this.state.links, [newLink.id]: newLink}, selected: []})
-                                    
-                                } else {
-                                  this.setState({selected: this.state.selected.concat([circle.id]), 
-                                  circles: {...this.state.circles, [circle.id]: selectedCircle}})
-                                }
-                                  
-                                subj.next({type: 'circle' + buttonFromNum[buttonNum] + 'Down', offsetX, offsetY})
-                             }}
-                             />  
-                   )
-                 })}
+              <ZoomContainer panX={panX} panY={panY} zoomScaleFactor={zoomScaleFactor} 
+                             width={graphWidth} height={graphHeight}>
+               <svg width={graphWidth} height={graphHeight}>
                  {_.map(this.state.links, link => {
                    let source = this.state.circles[link.source];
                    let target = this.state.circles[link.target];
@@ -123,16 +99,63 @@ class Figure extends React.Component {
                     )
                  })}
               </svg>
-               </div>
-            </div>
-           <input type="number" name='x' defaultValue={this.state.x} onChange={e=> this.setState({x:parseInt(e.target.value)})}/>
-           <input defaultValue={0} type='number' onChange={e=> {
-                 console.log(e.target.value)
-                 this.setState({scale: parseInt(e.target.value)})
+               {_.map(this.state.nodes, node =>{
+                 const {x,y} = node;
+                 return (
+                   <NodeDiv key={node.id} style={{ left: x, top: y }} 
+                   >
+                     <div>{node.id}</div>
+
+
+
+                     <span 
+
+                       onMouseDown={e=>{
+                         const {clientX, clientY} = e.nativeEvent
+                         e.stopPropagation(); 
+                         e.preventDefault(); 
+                         subj.next({type: 'dragStart', id: node.id, clientX, clientY}); 
+                         this.setState({dragStart: {x: node.x, y: node.y}})
+                         }} 
+
+                       onClick={e=> {e.stopPropagation(); e.preventDefault();}}
+
+                       onMouseUp={e=> {e.stopPropagation(); subj.next({type: 'mouseUp', id: node.id})}}
+                       
+                       >drag </span> 
+
+
+
+                     <span onClick={e=>{subj.next({type: 'select', id: node.id})}}>select </span>
+                     <span onClick={e=>{subj.next({type: 'link', id: node.id})}}>link </span> 
+                     <span>delete</span>
+                     <TextArea rows='1' autoFocus
+                       onClick={e => e.stopPropagation()}
+                       onBlur={e => this.setState({nodes: {...this.state.nodes, [node.id]: {...node, text: e.target.value}} })}
+                       ></TextArea>
+                   </NodeDiv>
+                 )
+                  
+               })
+
+               }
+                
+
+              
+            </ZoomContainer>
+           <input type="number" name='x' defaultValue={0} onChange={e=> this.setState({panX:parseInt(e.target.value)})}/>
+           <input defaultValue={1} type='number' onChange={e=> {
+                 
+                 this.setState({zoomScaleFactor: parseInt(e.target.value)})
+                 console.log(this.state)
                  }} />
             </div>
         )
     }
+}
+
+Figure.contextTypes = {
+    subj: PropTypes.object
 }
 
 class App extends React.Component {
