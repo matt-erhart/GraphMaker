@@ -22,7 +22,7 @@ const ZoomContainer = (props, {subj}) => {
             <ZoomDivContainer width={graphWidth} height={graphHeight} 
               onClick={e => {
                 const { offsetX, offsetY } = e.nativeEvent
-                subj.next({ type: 'click-background', offsetX, offsetY })
+                subj.next({ type: 'clickBackground', offsetX, offsetY })
               }}
             onMouseMove={e => {
                 const {offsetX, offsetY, clientX, clientY} = e.nativeEvent
@@ -30,7 +30,6 @@ const ZoomContainer = (props, {subj}) => {
               }}
               onMouseDown={e => {
                 const {offsetX, offsetY, button} = e.nativeEvent
-
                 subj.next({type: buttonFromNum[button] + 'Down', offsetX, offsetY})
               }}
               onContextMenu={e=> {

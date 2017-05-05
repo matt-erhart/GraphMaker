@@ -40,14 +40,10 @@ class Figure extends React.Component {
     componentWillMount(){
       const {subj} = this.context;
       const newNode = (click) => ({id: 'node-' + uid.sync(8), x: click.offsetX, y: click.offsetY, text: ''}); //@ts-ignore
-      // let mouseDown$ = subj.filter(action => action.type === 'LeftDown').map(down => {
-      //   let circ = newCircle(down, 1);
-      //   this.addCircle(this.state, circ)
-      //   return circ
-      // })
+
       let mouseUp$   = subj.filter(action => action.type === 'mouseUp');
       let mouseMove$ = subj.filter(action => action.type === 'mouseMove');
-      let clickBG$   = subj.filter(action => action.type === 'click-background');
+      let clickBG$   = subj.filter(action => action.type === 'clickBackground');
       let addNode$ = clickBG$.do(click => {
         let node = newNode(click);
         this.setState({nodes: {...this.state.nodes, [node.id]: node }});
@@ -68,77 +64,49 @@ class Figure extends React.Component {
       }))
       const test = {'link': {} }
 
-      //@ts-ignore
+      //make links
+      const initLink = (link1) => {
+        let { nodeID, x1, y1 } = this.state.linkStart;
+        if (this.state.linkStart.nodeID === '') {
+          let { x, y, id } = this.state.nodes[link1.id];
+          this.setState({ linkStart: { nodeID: id, x1: x, y1: y } })
+        }
+      }
+
+      const previewLink = (link1, moveData) => {
+          let { nodeID, x1, y1 } = this.state.linkStart;
+          let dx = moveData.clientX - link1.clientX;
+          let dy = moveData.clientY - link1.clientY;
+          let newLink = { ...this.state.linkStart, x2: x1 + dx, y2: y1 + dy }; //might be faster to mutate
+          this.setState({ linkStart: newLink })
+      }
+
       const newLink = (source, target) => ({id: 'link-' + uid.sync(8), source, target});
-
-
+      const setLink = (link1, click2) => {
+          if (click2.hasOwnProperty('id') && click2.id.length > 0 && click2.id !== link1.id) {
+            let link = newLink(link1.id, click2.id)
+            this.setState({links: {...this.state.links, [link.id]: link}});
+            this.setState({ linkStart: { nodeID: '' } })
+          } else {
+            this.setState({ linkStart: { nodeID: '' } })
+          }
+        }
 
       let linkClick$     = subj.filter(action => action.type === 'link')
-      let linkOrBGClick$ = Rx.Observable.merge(linkClick$, clickBG$)
-      let startStop$ = linkClick$.take(1).switchMap(clickLink => {
-              return mouseMove$.do(x=>console.log('preview line'))
-              .takeUntil(linkOrBGClick$.take(1).do(x=>console.log('setstate here'))).do(x=>console.log(x))
-      }).repeat()
+      let stopPreview$ = Rx.Observable.merge(linkClick$, clickBG$)
+      /*the trick to getting this to work for any number of pairs of clicks
+       is the take(1) at the begining and the repeat() at the end */
+      let initLink$ = linkClick$.take(1).do(link1=>initLink(link1))
       
-      // let startStop$ = Rx.Observable.concat(linkClick$.take(1), 
-      //         mouseMove$.do(x=>console.log('preview line')).takeUntil(linkOrBGClick$.take(1).do(x=>console.log('setstate here')) ) ).repeat().do(x=>console.log(x))
-      
-      // let win$ = linkClick$.switchMap(link => mouseMove$.takeUntil(linkOrBGClick$).combineLatest(linkOrBGClick$))
-    
-      // let makeLink$  = mouseMove$.windowToggle(startStop$.first().do(x=>console.log('1',x)), 
-      // ()=> startStop$.last().do(x=>console.log('2',x))).switch().combineLatest(startStop$);
 
-
-      // const previewLink$ = (clickLink) => {
-      //   return mouseMove$.takeUntil(linkOrBGClick$).do(moveData => {
-      //     let dx = moveData.clientX - clickLink.clientX;
-      //     let dy = moveData.clientY - clickLink.clientY;
-      //     let newLink = { ...this.state.linkStart, x2: x1 + dx, y: y1 + dy }; //might be faster to mutate
-      //     this.setState({ linkStart: newLink })
-      //   }
-      //   )
-      // }
-      // const initializeLink = (clickLink) => {
-      //   let { nodeID, x1, y1 } = this.state.linkStart;
-      //   if (this.state.linkStart.nodeID === '') {
-      //     let { x, y, id } = this.state.nodes[clickLink.id];
-      //     this.setState({ linkStart: { nodeID: id, x1: x, y1: y } })
-      //   }
-      // } 
-      // const addLink = (clickLink) => {
-      //   let { nodeID, x1, y1 } = this.state.linkStart;
-      //   if (nodeID.length > 0 && nodeID !== clickLink.id) {
-      //     let link = newLink(nodeID, clickLink.id)
-      //     this.setState({ links: { ...this.state.links, [link.id]: link } })
-      //     this.setState({ linkStart: { nodeID: '' } })
-      //   }
-      // }
-
-      // let linkCreate$ = linkClick$.take(1).switchMap(clickLink => {
-      //     return previewLink$(clickLink)
-      //  })
-
-        
-
-
-      //   }
-      // )
-
-
-
+      let startStop$ = initLink$.switchMap(link1 => {
+              return mouseMove$.do(moveData=>previewLink(link1, moveData))
+                    .takeUntil(stopPreview$.do(click2 => setLink(link1, click2)))
+      }).repeat();
       Rx.Observable.merge(addNode$,dnd$,startStop$).subscribe(x => console.log());
-
-
-      // let circleRightDown$ = subj.filter(action => action.type === 'circleRightDown').subscribe(x=>console.log('circ',x))
-      // let downUpDist$ = (circ) => mouseMove$.takeUntil(mouseUp$).map(move => Math.abs(circ.x-move.offsetX));
-      // mouseDown$.mergeMap(circ => downUpDist$(circ).do(distance => {circ.r = distance; this.addCircle(this.state, circ)}))
-      
-      //  subj.subscribe(x=>console.log(x))
-    
     }
 
     componentDidUpdate(){
-      // console.log(this.state.nodes)
     }
 
 
@@ -146,14 +114,18 @@ class Figure extends React.Component {
         const {panX, panY, zoomScaleFactor, graphWidth, graphHeight, ...other} = this.state;
         let {subj } = this.context;
         let x = 100;
+        console.log('links',this.state.linkStart)
         return (
           <div>
               <ZoomContainer panX={panX} panY={panY} zoomScaleFactor={zoomScaleFactor} 
                              width={graphWidth} height={graphHeight}>
                <svg width={graphWidth} height={graphHeight}>
+                 {this.state.linkStart.hasOwnProperty('x2') && 
+                     <line {...this.state.linkStart} strokeWidth="4" stroke="black" />
+                 }
                  {_.map(this.state.links, link => {
-                   let source = this.state.circles[link.source];
-                   let target = this.state.circles[link.target];
+                   let source = this.state.nodes[link.source];
+                   let target = this.state.nodes[link.target];
                    console.log('source', source,'target', target)
                     return (
                       <line key={link.id} x1={source.x} y1={source.y} x2={target.x} y2={target.y} strokeWidth="4" stroke="black" />
