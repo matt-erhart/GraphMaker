@@ -21,23 +21,27 @@ const ZoomContainer = (props, {subj}) => {
             return (
             <ZoomDivContainer width={graphWidth} height={graphHeight} 
               onClick={e => {
-                const { offsetX, offsetY } = e.nativeEvent
+                const { offsetX, offsetY, button } = e.nativeEvent
                 subj.next({ type: 'clickBackground', offsetX, offsetY })
+              }}
+              onContextMenu={e => {
+                e.preventDefault()
+                console.log('context')
+                const { offsetX, offsetY } = e.nativeEvent
+                subj.next({ type: 'rightClickBackground', offsetX, offsetY })
               }}
             onMouseMove={e => {
                 const {offsetX, offsetY, clientX, clientY} = e.nativeEvent
                 subj.next({type: 'mouseMove', offsetX, offsetY, clientX, clientY})
               }}
               onMouseDown={e => {
-                const {offsetX, offsetY, button} = e.nativeEvent
-                subj.next({type: buttonFromNum[button] + 'Down', offsetX, offsetY})
-              }}
-              onContextMenu={e=> {
-                e.preventDefault()
+                const {offsetX, offsetY, clientX, clientY, button} = e.nativeEvent
+                console.log('mousedown',{type: buttonFromNum[button] + 'Down', offsetX, offsetY, clientX, clientY} )
+                subj.next({type: buttonFromNum[button] + 'Down', offsetX, offsetY, clientX, clientY})
               }}
               onMouseUp={e => {
-                const {offsetX, offsetY} = e.nativeEvent
-                subj.next({type: 'mouseUp', offsetX, offsetY})
+                const {offsetX, offsetY, clientX, clientY, button} = e.nativeEvent
+                subj.next({type: 'mouseUp', offsetX, offsetY, clientX, clientY})
               }}
 
               >

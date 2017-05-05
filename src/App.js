@@ -23,6 +23,7 @@ class Figure extends React.Component {
       selected: [],
       nodes: {}, // {id: {id: ..., x,y,width,height, title?, metadata?, tags?, type? }} //everything will be positioned relative to nodes
       dragStart: {x: 0, y: 0},
+      panStart: {x: 0, y: 0},
       linkStart: {nodeID: ''}
   }
     newCircle = (id, x, y, r) => {
@@ -44,13 +45,14 @@ class Figure extends React.Component {
       let mouseUp$   = subj.filter(action => action.type === 'mouseUp');
       let mouseMove$ = subj.filter(action => action.type === 'mouseMove');
       let clickBG$   = subj.filter(action => action.type === 'clickBackground');
-      let addNode$ = clickBG$.do(click => {
+      let rightClickBG$   = subj.filter(action => action.type === 'rightClickBackground');
+      let addNode$ = rightClickBG$.do(click => {
         let node = newNode(click);
         this.setState({nodes: {...this.state.nodes, [node.id]: node }});
       })
 
       let select$ = subj.filter(action => action.type === 'select')
-      //'nodeMouseUp' 'dragStart' 'select' 'link'
+      //drag nodes ----------------------------------------------------------------------------------------------
       let dragStart$ = subj.filter(action => action.type === 'dragStart');
       let dnd$ = dragStart$.mergeMap(action => mouseMove$.takeUntil(mouseUp$).do(moveData => {
           let {x,y} = this.state.dragStart;
@@ -64,7 +66,7 @@ class Figure extends React.Component {
       }))
       const test = {'link': {} }
 
-      //make links
+      //make links ----------------------------------------------------------------------------------------------
       const initLink = (link1) => {
         let { nodeID, x1, y1 } = this.state.linkStart;
         if (this.state.linkStart.nodeID === '') {
@@ -99,14 +101,31 @@ class Figure extends React.Component {
       let initLink$ = linkClick$.take(1).do(link1=>initLink(link1))
       
 
-      let startStop$ = initLink$.switchMap(link1 => {
+      let addLink$ = initLink$.switchMap(link1 => {
               return mouseMove$.do(moveData=>previewLink(link1, moveData))
                     .takeUntil(stopPreview$.do(click2 => setLink(link1, click2)))
       }).repeat();
-      Rx.Observable.merge(addNode$,dnd$,startStop$).subscribe(x => console.log());
+      
+      //pan ----------------------------------------------------------------------------------------------
+      let panStart$ = subj.filter(action => action.type === 'MiddleDown')
+                        .do(x=>this.setState({panStart: {x: this.state.panX, y: this.state.panY}}))
+      let panEnd$ = subj.filter(action => action.type === 'mouseUp').do(x => console.log(x))
+      const setPan = (panStart, moveData) => {
+          let {x,y} = this.state.panStart;
+          let dx = moveData.clientX-panStart.clientX;
+          let dy = moveData.clientY-panStart.clientY;
+          this.setState({panX: x+dx});
+          this.setState({panY: y+dy});
+      }
+      let pan$ = panStart$.switchMap(panStart => {
+        return mouseMove$.do(moveData=>setPan(panStart, moveData)).takeUntil(panEnd$)
+      })
+
+      Rx.Observable.merge(addNode$,dnd$,addLink$,pan$).subscribe(x => console.log(x));
     }
 
     componentDidUpdate(){
+      console.log(this.state.panY)
     }
 
 
@@ -114,7 +133,6 @@ class Figure extends React.Component {
         const {panX, panY, zoomScaleFactor, graphWidth, graphHeight, ...other} = this.state;
         let {subj } = this.context;
         let x = 100;
-        console.log('links',this.state.linkStart)
         return (
           <div>
               <ZoomContainer panX={panX} panY={panY} zoomScaleFactor={zoomScaleFactor} 
