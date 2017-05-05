@@ -57,8 +57,8 @@ class Figure extends React.Component {
       let dnd$ = dragStart$.mergeMap(action => mouseMove$.takeUntil(mouseUp$).do(moveData => {
           let {x,y} = this.state.dragStart;
           let oldNode = this.state.nodes[action.id]
-          let dx = moveData.clientX-action.clientX;
-          let dy = moveData.clientY-action.clientY;
+          let dx = (moveData.clientX-action.clientX)/this.state.zoomScaleFactor;
+          let dy = (moveData.clientY-action.clientY)/this.state.zoomScaleFactor;
           console.log(dx,dy)
           let newNode = {...oldNode, x: x+dx, y: y+dy}; //might be faster to mutate
           this.setState({nodes: {...this.state.nodes, [action.id]: newNode}});
@@ -77,8 +77,8 @@ class Figure extends React.Component {
 
       const previewLink = (link1, moveData) => {
           let { nodeID, x1, y1 } = this.state.linkStart;
-          let dx = moveData.clientX - link1.clientX;
-          let dy = moveData.clientY - link1.clientY;
+          let dx = (moveData.clientX - link1.clientX)/this.state.zoomScaleFactor;
+          let dy = (moveData.clientY - link1.clientY)/this.state.zoomScaleFactor;
           let newLink = { ...this.state.linkStart, x2: x1 + dx, y2: y1 + dy }; //might be faster to mutate
           this.setState({ linkStart: newLink })
       }
