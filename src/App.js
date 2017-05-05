@@ -112,8 +112,8 @@ class Figure extends React.Component {
       let panEnd$ = subj.filter(action => action.type === 'mouseUp').do(x => console.log(x))
       const setPan = (panStart, moveData) => {
           let {x,y} = this.state.panStart;
-          let dx = moveData.clientX-panStart.clientX;
-          let dy = moveData.clientY-panStart.clientY;
+          let dx = (moveData.clientX-panStart.clientX)/this.state.zoomScaleFactor;
+          let dy = (moveData.clientY-panStart.clientY)/this.state.zoomScaleFactor;
           this.setState({panX: x+dx});
           this.setState({panY: y+dy});
       }
