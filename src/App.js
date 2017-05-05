@@ -121,11 +121,21 @@ class Figure extends React.Component {
         return mouseMove$.do(moveData=>setPan(panStart, moveData)).takeUntil(panEnd$)
       })
 
-      Rx.Observable.merge(addNode$,dnd$,addLink$,pan$).subscribe(x => console.log(x));
+     //zoom ---------------------------------------------------------------------------------------------- mouseWheel
+     let zoom$ = subj.filter(action => action.type === 'mouseWheel')
+                  .do(action => {
+                    const dxFactor = .2
+                    const zoomDx = action.deltaY > 0 ? -1*dxFactor: 1*dxFactor;
+                    let oldZoom = this.state.zoomScaleFactor;
+                    this.setState({zoomScaleFactor: oldZoom+zoomDx})
+                  })
+
+
+      Rx.Observable.merge(addNode$,dnd$,addLink$,pan$, zoom$).subscribe(x => console.log(x));
     }
 
     componentDidUpdate(){
-      console.log(this.state.panY)
+      console.log('zoom',this.state.zoomScaleFactor)
     }
 
 

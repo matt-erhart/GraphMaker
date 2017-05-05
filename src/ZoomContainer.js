@@ -43,6 +43,10 @@ const ZoomContainer = (props, {subj}) => {
                 const {offsetX, offsetY, clientX, clientY, button} = e.nativeEvent
                 subj.next({type: 'mouseUp', offsetX, offsetY, clientX, clientY})
               }}
+              onWheel={e => {
+                const {deltaY} = e.nativeEvent;
+                subj.next({type: 'mouseWheel', deltaY})
+              }}
 
               >
               <ZoomDiv panX={panX} panY={panY} zoomScaleFactor={zoomScaleFactor} 
