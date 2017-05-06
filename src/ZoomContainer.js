@@ -36,7 +36,6 @@ const ZoomContainer = (props, {subj}) => {
               }}
               onMouseDown={e => {
                 const {offsetX, offsetY, clientX, clientY, button} = e.nativeEvent
-                console.log('mousedown',{type: buttonFromNum[button] + 'Down', offsetX, offsetY, clientX, clientY} )
                 subj.next({type: buttonFromNum[button] + 'Down', offsetX, offsetY, clientX, clientY})
               }}
               onMouseUp={e => {

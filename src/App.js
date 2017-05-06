@@ -24,7 +24,8 @@ class Figure extends React.Component {
       nodes: {}, // {id: {id: ..., x,y,width,height, title?, metadata?, tags?, type? }} //everything will be positioned relative to nodes
       dragStart: {x: 0, y: 0},
       panStart: {x: 0, y: 0},
-      linkStart: {nodeID: ''}
+      linkStart: {nodeID: ''},
+      linkOptions: {}
   }
     newCircle = (id, x, y, r) => {
 
@@ -40,7 +41,7 @@ class Figure extends React.Component {
 
     componentWillMount(){
       const {subj} = this.context;
-      const newNode = (click) => ({id: 'node-' + uid.sync(8), x: click.offsetX, y: click.offsetY, text: ''}); //@ts-ignore
+      const newNode = (click) => ({id: 'node-' + uid.sync(8), x: click.offsetX, y: click.offsetY, text: ''});
 
       let mouseUp$   = subj.filter(action => action.type === 'mouseUp');
       let mouseMove$ = subj.filter(action => action.type === 'mouseMove');
@@ -52,7 +53,7 @@ class Figure extends React.Component {
       })
 
       let select$ = subj.filter(action => action.type === 'select')
-      //drag nodes ----------------------------------------------------------------------------------------------
+      //drag nodes ---------------------------------------------------------------------------------------------- drag nodes
       let dragStart$ = subj.filter(action => action.type === 'dragStart');
       let dnd$ = dragStart$.mergeMap(action => mouseMove$.takeUntil(mouseUp$).do(moveData => {
           let {x,y} = this.state.dragStart;
@@ -66,7 +67,7 @@ class Figure extends React.Component {
       }))
       const test = {'link': {} }
 
-      //make links ----------------------------------------------------------------------------------------------
+      //make links ------------------------------------------------------------------------------------------ make links
       const initLink = (link1) => {
         let { nodeID, x1, y1 } = this.state.linkStart;
         if (this.state.linkStart.nodeID === '') {
@@ -94,8 +95,9 @@ class Figure extends React.Component {
           }
         }
 
-      let linkClick$     = subj.filter(action => action.type === 'link')
-      let stopPreview$ = Rx.Observable.merge(linkClick$, clickBG$)
+      let linkClick$     = subj.filter(action => action.type === 'link' || action.type === 'linkMouseDown')
+      let linkMouseUp$   = subj.filter(action => action.type === 'linkMouseUp')
+      let stopPreview$ = Rx.Observable.merge(linkClick$, clickBG$, linkMouseUp$)
       /*the trick to getting this to work for any number of pairs of clicks
        is the take(1) at the begining and the repeat() at the end */
       let initLink$ = linkClick$.take(1).do(link1=>initLink(link1))
@@ -106,7 +108,7 @@ class Figure extends React.Component {
                     .takeUntil(stopPreview$.do(click2 => setLink(link1, click2)))
       }).repeat();
       
-      //pan ----------------------------------------------------------------------------------------------
+      //pan ---------------------------------------------------------------------------------------------- pan
       let panStart$ = subj.filter(action => action.type === 'MiddleDown')
                         .do(x=>this.setState({panStart: {x: this.state.panX, y: this.state.panY}}))
       let panEnd$ = subj.filter(action => action.type === 'mouseUp').do(x => console.log(x))
@@ -121,7 +123,7 @@ class Figure extends React.Component {
         return mouseMove$.do(moveData=>setPan(panStart, moveData)).takeUntil(panEnd$)
       })
 
-     //zoom ---------------------------------------------------------------------------------------------- mouseWheel
+     //zoom ---------------------------------------------------------------------------------------------- zoom
      let zoom$ = subj.filter(action => action.type === 'mouseWheel')
                   .do(action => {
                     const dxFactor = .2
@@ -131,11 +133,11 @@ class Figure extends React.Component {
                   })
 
 
-      Rx.Observable.merge(addNode$,dnd$,addLink$,pan$, zoom$).subscribe(x => console.log(x));
+      Rx.Observable.merge(addNode$,dnd$,addLink$,pan$, zoom$).subscribe(x => console.log());
     }
 
     componentDidUpdate(){
-      console.log('zoom',this.state.zoomScaleFactor)
+      console.log(this.state.linkOptions)
     }
 
 
@@ -151,22 +153,31 @@ class Figure extends React.Component {
                  {this.state.linkStart.hasOwnProperty('x2') && 
                      <line {...this.state.linkStart} strokeWidth="4" stroke="black" />
                  }
+                 {/*draw svg links ---------------------------------------------------------------------- draw svg links*/}
                  {_.map(this.state.links, link => {
                    let source = this.state.nodes[link.source];
                    let target = this.state.nodes[link.target];
-                   console.log('source', source,'target', target)
                     return (
-                      <line key={link.id} x1={source.x} y1={source.y} x2={target.x} y2={target.y} strokeWidth="4" stroke="black" />
+                      <line 
+                      key={link.id} 
+                      x1={source.x} y1={source.y} x2={target.x} y2={target.y} 
+                      strokeWidth="4" stroke="black" 
+                      onClick={e=>{
+                           const {offsetX, offsetY, clientX, clientY, button} = e.nativeEvent
+                           this.setState({linkOptions: {left: offsetX, top: offsetY, id: link.id }})
+                      }}
+                      />
                     )
                  })}
               </svg>
+               {/*draw HTML nodes ----------------------------------------------------------------------------- draw HTML nodes*/}
                {_.map(this.state.nodes, node =>{
                  const {x,y} = node;
                  return (
-                   <NodeDiv key={node.id} style={{ left: x, top: y }} 
-                   >
-                     <div>{node.id}</div>
-                     <span 
+                   <NodeDiv key={node.id} style={{ left: x, top: y }} onContextMenu={e=>e.stopPropagation()}>
+                     
+                     {/*//drag ---------------------------------------------------------------------------------- drag*/}
+                     <span style={{cursor: 'move'}}
                        onMouseDown={e=>{
                          const {clientX, clientY} = e.nativeEvent
                          e.stopPropagation(); 
@@ -178,17 +189,34 @@ class Figure extends React.Component {
                        onMouseUp={e=> {e.stopPropagation(); subj.next({type: 'mouseUp', id: node.id})}}>
                        drag 
                        </span> 
+                     
+                     {/*//create link ------------------------------------------------------------------------------ create link*/}
                      <span onClick={e=>{
+                       e.preventDefault()
                        e.stopPropagation()
                        const {clientX, clientY} = e.nativeEvent
                        subj.next({type: 'link', id: node.id, clientX, clientY}); 
-                       
-                       }}>link </span> 
+                       }} 
+                       onMouseDown={e=>{
+                       e.preventDefault()
+                       e.stopPropagation()
+                       const {clientX, clientY} = e.nativeEvent
+                       subj.next({type: 'linkMouseDown', id: node.id, clientX, clientY}); 
+                       }} 
+                       onMouseUp={e=>{
+                       e.preventDefault()
+                       e.stopPropagation()
+                       const {clientX, clientY} = e.nativeEvent
+                       subj.next({type: 'linkMouseUp', id: node.id, clientX, clientY}); 
+                       }}  
+                       style={{cursor: 'alias'}}
+                       > link </span> 
 
 
-
-                     <span onClick={e=>{subj.next({type: 'select', id: node.id})}}>select </span>
-                     <span>delete</span>
+                     {/*//select --------------------------------------------------------------------------------------------------- select*/}
+                     <span onClick={e=>{subj.next({type: 'select', id: node.id})}} style={{cursor: 'cell'}}>select </span>
+                     {/*//delete --------------------------------------------------------------------------------------------------- delete*/}
+                     <span style={{cursor: 'crosshair'}}>delete</span>
                      <TextArea rows='1' autoFocus
                        onClick={e => e.stopPropagation()}
                        onBlur={e => this.setState({nodes: {...this.state.nodes, [node.id]: {...node, text: e.target.value}} })}
@@ -197,18 +225,14 @@ class Figure extends React.Component {
                  )
                   
                })
-
                }
-                
-
-              
+               {/*//link options ------------------------------------------------------------------------------------------------------ link options*/}
+                {this.state.linkOptions.hasOwnProperty('id') && 
+                     <input style={{left: this.state.linkOptions.left, top: this.state.linkOptions.top, position: 'absolute' }} 
+                     onBlur={e=>{this.setState({linkOptions: {}})}} autoFocus
+                     type="text"/>
+                 }
             </ZoomContainer>
-           <input type="number" name='x' defaultValue={0} onChange={e=> this.setState({panX:parseInt(e.target.value)})}/>
-           <input defaultValue={1} type='number' onChange={e=> {
-                 
-                 this.setState({zoomScaleFactor: parseInt(e.target.value)})
-                 console.log(this.state)
-                 }} />
             </div>
         )
     }
