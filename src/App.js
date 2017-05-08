@@ -9,6 +9,18 @@ import TextArea from './TextArea'
 import ZoomContainer from './ZoomContainer'
 import {buttonFromNum} from './constants'
 import PropTypes from 'prop-types'
+import  GraphIO from './GraphIO'
+
+import Rebase from 're-base';
+
+var base = Rebase.createClass({
+    apiKey: "AIzaSyD2f07HcJOim-7AQGBU6Tdn2zNzhizrk20",
+    authDomain: "graphmaker-4f5f7.firebaseapp.com",
+    databaseURL: "https://graphmaker-4f5f7.firebaseio.com",
+    projectId: "graphmaker-4f5f7",
+    storageBucket: "graphmaker-4f5f7.appspot.com",
+    messagingSenderId: "148125882055"
+});
 
 class Figure extends React.Component {
     state = {
@@ -25,21 +37,48 @@ class Figure extends React.Component {
       dragStart: {x: 0, y: 0},
       panStart: {x: 0, y: 0},
       linkStart: {nodeID: ''},
-      linkOptions: {}
+      linkOptions: {},
+      graphNames: []
   }
-    newCircle = (id, x, y, r) => {
-
+    addGraph = (graphName) => {
+      base.post(`graphs/${graphName}`, {
+    data: {links: this.state.links, nodes: this.state.nodes},
+      }).then(() => {
+        console.log('saved graph')
+      }).catch(err => {
+        // handle error
+      });
+      base.post(`graphNames`, {
+       data: graphName
+      }).then(() => {
+        console.log('saved graph')
+      }).catch(err => {
+        // handle error
+      });
+      this.setState({graphNames: this.state.graphNames.concat([graphName])})
     }
 
-    addCircle = (state, newCircle) => {
-        this.setState({circles: Object.assign({}, this.state.circles, {[newCircle.id]: newCircle})});
-    }
+    loadGraph = (graphName) => {
+      base.fetch(`graphs/${graphName}`, {
+        context: this,
+        asArray: false
+      }).then(data => {
+        console.log('then',data.nodes)
+        const {links, nodes} = data;
+        this.setState({ nodes: nodes})
+        this.setState({ links: links})
 
-    removeCircle = (state, id) => {
-        
+      }).catch(error => {
+        //handle error
+      })
     }
-
     componentWillMount(){
+      base.syncState(`graphNames`, {
+        context: this,
+        state: 'graphNames',
+        asArray: true
+      });
+
       const {subj} = this.context;
       const newNode = (click) => ({id: 'node-' + uid.sync(8), x: click.offsetX, y: click.offsetY, text: ''});
 
@@ -60,10 +99,8 @@ class Figure extends React.Component {
           let oldNode = this.state.nodes[action.id]
           let dx = (moveData.clientX-action.clientX)/this.state.zoomScaleFactor;
           let dy = (moveData.clientY-action.clientY)/this.state.zoomScaleFactor;
-          console.log(dx,dy)
           let newNode = {...oldNode, x: x+dx, y: y+dy}; //might be faster to mutate
           this.setState({nodes: {...this.state.nodes, [action.id]: newNode}});
-          console.log(this.state.nodes[action.id])
       }))
       const test = {'link': {} }
 
@@ -136,8 +173,8 @@ class Figure extends React.Component {
       Rx.Observable.merge(addNode$,dnd$,addLink$,pan$, zoom$).subscribe(x => console.log());
     }
 
-    componentDidUpdate(){
-      console.log(this.state.linkOptions, this.state.links)
+    componentWillUpdate(){
+      console.log(' state',this.state)
     }
 
 
@@ -156,6 +193,7 @@ class Figure extends React.Component {
                  {/*draw svg links ---------------------------------------------------------------------- draw svg links*/}
                  {_.map(this.state.links, link => {
                    let source = this.state.nodes[link.source];
+                   console.log(this.state.nodes, this.state.nodes[link.source], link.source)
                    let target = this.state.nodes[link.target];
                     return (
                       <line 
@@ -250,6 +288,20 @@ class Figure extends React.Component {
                      type="text"/>
                  }
             </ZoomContainer>
+            <button onClick={e=>{
+                  var d = new Date();
+                  var datestring = d.getDate()  + "_" + (d.getMonth()+1) + "_" + d.getFullYear() + "_" +
+                  d.getHours() + "_" + d.getMinutes() + '_' + d.getSeconds();
+                  this.addGraph(`graph-${datestring}`)
+              }}>Save Graph</button>
+              <ul>
+                {this.state.graphNames.map(name => {
+                  return <li key={name} onClick={e=>{
+                    console.log('name',name)
+                    this.loadGraph(name)
+                    }}> {name} </li>
+                })}
+              </ul>
             </div>
         )
     }
