@@ -38,11 +38,12 @@ class Figure extends React.Component {
       panStart: {x: 0, y: 0},
       linkStart: {nodeID: ''},
       linkOptions: {},
-      graphNames: []
+      graphNames: [],
+      graph: {nodes: {}, links: {}}
   }
     addGraph = (graphName) => {
       base.post(`graphs/${graphName}`, {
-    data: {links: this.state.links, nodes: this.state.nodes},
+    data: this.state.graph,
       }).then(() => {
         console.log('saved graph')
       }).catch(err => {
@@ -63,15 +64,22 @@ class Figure extends React.Component {
         context: this,
         asArray: false
       }).then(data => {
-        console.log('then',data.nodes)
-        const {links, nodes} = data;
-        this.setState({ nodes: nodes})
-        this.setState({ links: links})
-
+        this.setState({graph: data})
       }).catch(error => {
-        //handle error
+        console.error(error)
       })
     }
+
+    deleteGraph = (graphName) => {
+
+      this.setState({graphNames: _.filter(this.state.graphNames, x => x !== graphName)})
+      base.remove('graphs/' + graphName).then(() => {
+        console.log('removed ', graphName)
+      }).catch(error => {
+        console.error(error)
+      });
+    }
+
     componentWillMount(){
       base.syncState(`graphNames`, {
         context: this,
@@ -88,7 +96,7 @@ class Figure extends React.Component {
       let rightClickBG$   = subj.filter(action => action.type === 'rightClickBackground');
       let addNode$ = rightClickBG$.do(click => {
         let node = newNode(click);
-        this.setState({nodes: {...this.state.nodes, [node.id]: node }});
+        this.setState({graph: {...this.state.graph, nodes: {...this.state.graph.nodes, [node.id]: node }}});
       })
 
       let select$ = subj.filter(action => action.type === 'select')
@@ -96,11 +104,11 @@ class Figure extends React.Component {
       let dragStart$ = subj.filter(action => action.type === 'dragStart');
       let dnd$ = dragStart$.mergeMap(action => mouseMove$.takeUntil(mouseUp$).do(moveData => {
           let {x,y} = this.state.dragStart;
-          let oldNode = this.state.nodes[action.id]
+          let oldNode = this.state.graph.nodes[action.id]
           let dx = (moveData.clientX-action.clientX)/this.state.zoomScaleFactor;
           let dy = (moveData.clientY-action.clientY)/this.state.zoomScaleFactor;
           let newNode = {...oldNode, x: x+dx, y: y+dy}; //might be faster to mutate
-          this.setState({nodes: {...this.state.nodes, [action.id]: newNode}});
+          this.setState({graph: {...this.state.graph, nodes: {...this.state.graph.nodes, [action.id]: newNode}}});
       }))
       const test = {'link': {} }
 
@@ -108,7 +116,7 @@ class Figure extends React.Component {
       const initLink = (link1) => {
         let { nodeID, x1, y1 } = this.state.linkStart;
         if (this.state.linkStart.nodeID === '') {
-          let { x, y, id } = this.state.nodes[link1.id];
+          let { x, y, id } = this.state.graph.nodes[link1.id];
           this.setState({ linkStart: { nodeID: id, x1: x, y1: y } })
         }
       }
@@ -125,7 +133,7 @@ class Figure extends React.Component {
       const setLink = (link1, click2) => {
           if (click2.hasOwnProperty('id') && click2.id.length > 0 && click2.id !== link1.id) {
             let link = newLink(link1.id, click2.id)
-            this.setState({links: {...this.state.links, [link.id]: link}});
+            this.setState({graph: {...this.state.graph, links: {...this.state.graph.links, [link.id]: link}}});
             this.setState({ linkStart: { nodeID: '' } })
           } else {
             this.setState({ linkStart: { nodeID: '' } })
@@ -176,7 +184,9 @@ class Figure extends React.Component {
     componentWillUpdate(){
       console.log(' state',this.state)
     }
+    componentDidMount(){
 
+    }
 
     render() {
         const {panX, panY, zoomScaleFactor, graphWidth, graphHeight, ...other} = this.state;
@@ -191,10 +201,10 @@ class Figure extends React.Component {
                      <line {..._.omit(this.state.linkStart,'nodeID')} strokeWidth="4" stroke="black" />
                  }
                  {/*draw svg links ---------------------------------------------------------------------- draw svg links*/}
-                 {_.map(this.state.links, link => {
-                   let source = this.state.nodes[link.source];
-                   console.log(this.state.nodes, this.state.nodes[link.source], link.source)
-                   let target = this.state.nodes[link.target];
+                 {_.map(this.state.graph.links, link => {
+
+                   let source = this.state.graph.nodes[link.source];
+                   let target = this.state.graph.nodes[link.target];
                     return (
                       <line 
                       key={link.id} 
@@ -209,7 +219,7 @@ class Figure extends React.Component {
                  })}
               </svg>
                {/*draw HTML nodes ----------------------------------------------------------------------------- draw HTML nodes*/}
-               {_.map(this.state.nodes, node =>{
+               {_.map(this.state.graph.nodes, node =>{
                  const {x,y} = node;
                  return (
                    <NodeDiv key={node.id} style={{ left: x, top: y }} onContextMenu={e=>e.stopPropagation()}>
@@ -257,7 +267,7 @@ class Figure extends React.Component {
                      <span style={{cursor: 'crosshair'}}>delete</span>
                      <TextArea rows='1' autoFocus
                        onClick={e => e.stopPropagation()}
-                       onBlur={e => this.setState({nodes: {...this.state.nodes, [node.id]: {...node, text: e.target.value}} })}
+                       onBlur={e => this.setState({graph: {...this.state.graph, nodes: {...this.state.graph.nodes, [node.id]: {...node, text: e.target.value}} }})}
                        ></TextArea>
                    </NodeDiv>
                  )
@@ -266,19 +276,19 @@ class Figure extends React.Component {
                }
                {/*//link options ------------------------------------------------------------------------------------------------------ link options*/}
                 {this.state.linkOptions.hasOwnProperty('id') && 
-                     <input autoFocus value={this.state.links[this.state.linkOptions.id].label}
+                     <input autoFocus value={this.state.graph.links[this.state.linkOptions.id].label}
                      style={{left: this.state.linkOptions.left, top: this.state.linkOptions.top, position: 'absolute' }} 
                      onChange={e=>{
-                       console.log('change', this.state.links[this.state.linkOptions.id])
-                       const {links, linkOptions} = this.state;
-                       const linkToUpdate = links[linkOptions.id];
-                       this.setState({links: {...links, [linkOptions.id]: {...linkToUpdate, label: e.target.value}} })
+                       console.log('change', this.state.graph.links, this.state.linkOptions.id)
+                       const {links} = this.state.graph;
+                       const linkToUpdate = links[this.state.linkOptions.id];
+                       this.setState({graph: {...this.state.graph, links: {...links, [this.state.linkOptions.id]: {...linkToUpdate, label: e.target.value}}}})
                      }}
                      onBlur={e=>{
-                       console.log('asdf', this.state.links[this.state.linkOptions.id])
-                       const {links, linkOptions} = this.state;
-                       const linkToUpdate = links[linkOptions.id];
-                       this.setState({links: {...links, [linkOptions.id]: {...linkToUpdate, label: e.target.value}} })
+                       console.log('asdf', this.state.graph.links[this.state.linkOptions.id])
+                       const {links} = this.state.graph;
+                       const linkToUpdate = links[this.state.linkOptions.id];
+                       this.setState({graph: {...this.state.graph, links: {...links, [this.state.linkOptions.id]: {...linkToUpdate, label: e.target.value}}}})
                        this.setState({linkOptions: {}})} } 
                      onKeyUp={e=>{
                        if (e.key === 'Enter') {
@@ -296,10 +306,10 @@ class Figure extends React.Component {
               }}>Save Graph</button>
               <ul>
                 {this.state.graphNames.map(name => {
-                  return <li key={name} onClick={e=>{
+                  return <li style={{cursor: 'pointer'}}key={name} onClick={e=>{
                     console.log('name',name)
                     this.loadGraph(name)
-                    }}> {name} </li>
+                    }}> {name} <span onClick={e=>{this.deleteGraph(name)}}> [X] </span> </li>
                 })}
               </ul>
             </div>
