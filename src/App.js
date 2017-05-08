@@ -84,7 +84,7 @@ class Figure extends React.Component {
           this.setState({ linkStart: newLink })
       }
 
-      const newLink = (source, target) => ({id: 'link-' + uid.sync(8), source, target});
+      const newLink = (source, target) => ({id: 'link-' + uid.sync(8), source, target, label: ''});
       const setLink = (link1, click2) => {
           if (click2.hasOwnProperty('id') && click2.id.length > 0 && click2.id !== link1.id) {
             let link = newLink(link1.id, click2.id)
@@ -137,7 +137,7 @@ class Figure extends React.Component {
     }
 
     componentDidUpdate(){
-      console.log(this.state.linkOptions)
+      console.log(this.state.linkOptions, this.state.links)
     }
 
 
@@ -151,7 +151,7 @@ class Figure extends React.Component {
                              width={graphWidth} height={graphHeight}>
                <svg width={graphWidth} height={graphHeight}>
                  {this.state.linkStart.hasOwnProperty('x2') && 
-                     <line {...this.state.linkStart} strokeWidth="4" stroke="black" />
+                     <line {..._.omit(this.state.linkStart,'nodeID')} strokeWidth="4" stroke="black" />
                  }
                  {/*draw svg links ---------------------------------------------------------------------- draw svg links*/}
                  {_.map(this.state.links, link => {
@@ -228,8 +228,25 @@ class Figure extends React.Component {
                }
                {/*//link options ------------------------------------------------------------------------------------------------------ link options*/}
                 {this.state.linkOptions.hasOwnProperty('id') && 
-                     <input style={{left: this.state.linkOptions.left, top: this.state.linkOptions.top, position: 'absolute' }} 
-                     onBlur={e=>{this.setState({linkOptions: {}})}} autoFocus
+                     <input autoFocus value={this.state.links[this.state.linkOptions.id].label}
+                     style={{left: this.state.linkOptions.left, top: this.state.linkOptions.top, position: 'absolute' }} 
+                     onChange={e=>{
+                       console.log('change', this.state.links[this.state.linkOptions.id])
+                       const {links, linkOptions} = this.state;
+                       const linkToUpdate = links[linkOptions.id];
+                       this.setState({links: {...links, [linkOptions.id]: {...linkToUpdate, label: e.target.value}} })
+                     }}
+                     onBlur={e=>{
+                       console.log('asdf', this.state.links[this.state.linkOptions.id])
+                       const {links, linkOptions} = this.state;
+                       const linkToUpdate = links[linkOptions.id];
+                       this.setState({links: {...links, [linkOptions.id]: {...linkToUpdate, label: e.target.value}} })
+                       this.setState({linkOptions: {}})} } 
+                     onKeyUp={e=>{
+                       if (e.key === 'Enter') {
+                          this.setState({linkOptions: {}})
+                       }
+                     }}
                      type="text"/>
                  }
             </ZoomContainer>

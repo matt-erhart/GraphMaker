@@ -2,8 +2,8 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import App from './App';
 import './index.css';
-import Rx from 'rxjs'
-import PropTypes from 'prop-types'
+import Rx from 'rxjs';
+import PropTypes from 'prop-types';
 
 let subj = new Rx.Subject();
 

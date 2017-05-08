@@ -9,6 +9,7 @@
     "cytoscape": "^3.0.0",
     "d3": "^4.8.0",
     "draft-js": "^0.10.0",
+    "jest": "^20.0.0",
     "mobx": "^3.1.9",
     "prop-types": "^15.5.8",
     "ramda": "^0.23.0",
@@ -27,7 +28,7 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "test": "react-scripts test --env=jsdom",
+    "test": "jest",
     "eject": "react-scripts eject"
   }
 }
