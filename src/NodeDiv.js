@@ -7,4 +7,6 @@ export default styled.div`
   margin: 0;
   border: grey solid thin;
   border-radius:6px;
+  background-color: lightblue;
+  opacity: .99;
 `

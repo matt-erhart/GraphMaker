@@ -10,6 +10,8 @@ import ZoomContainer from './ZoomContainer'
 import {buttonFromNum} from './constants'
 import PropTypes from 'prop-types'
 import  GraphIO from './GraphIO'
+import Line from './Line'
+
 
 import Rebase from 're-base';
 
@@ -24,20 +26,20 @@ var base = Rebase.createClass({
 
 class Figure extends React.Component {
     state = {
-      zoomScaleFactor: 1,
-      graphWidth: 1500, 
-      graphHeight: 1000, 
-      panX: 0, 
-      panY: 0, 
+      zoomScaleFactor: 1, //
+      graphWidth: 1500,  //
+      graphHeight: 1000, //
+      panX: 0, //
+      panY: 0, //
       circles: {}, // {'id': {id: 'id', x:, y:, r:, fill}}
       lines: {}, // {'id': {id: 'id', x1:, y1:, x2:, y2:}}
-      links: {},
-      selected: [],
+      links: {}, //
+      selected: [], 
       nodes: {}, // {id: {id: ..., x,y,width,height, title?, metadata?, tags?, type? }} //everything will be positioned relative to nodes
       dragStart: {x: 0, y: 0},
       panStart: {x: 0, y: 0},
       linkStart: {nodeID: ''},
-      linkOptions: {},
+      linkOptions: {}, 
       graphNames: [],
       graph: {nodes: {}, links: {}}
   }
@@ -189,28 +191,27 @@ class Figure extends React.Component {
     }
 
     render() {
-        const {panX, panY, zoomScaleFactor, graphWidth, graphHeight, ...other} = this.state;
-        let {subj } = this.context;
+        const {panX, panY, zoomScaleFactor, graphWidth, graphHeight} = this.state;
+        const {nodes, links} = this.state.graph;
+        let {subj} = this.context;
         let x = 100;
         return (
           <div>
               <ZoomContainer panX={panX} panY={panY} zoomScaleFactor={zoomScaleFactor} 
                              width={graphWidth} height={graphHeight}>
                <svg width={graphWidth} height={graphHeight}>
-                 {this.state.linkStart.hasOwnProperty('x2') && 
-                     <line {..._.omit(this.state.linkStart,'nodeID')} strokeWidth="4" stroke="black" />
+                 {this.state.linkStart.hasOwnProperty('x2') &&
+                     <line {..._.omit(this.state.linkStart,'nodeID')} style={{transform: 'translate(75px, 30px)'}} strokeWidth="4" stroke="black" />
                  }
                  {/*draw svg links ---------------------------------------------------------------------- draw svg links*/}
                  {_.map(this.state.graph.links, link => {
-
                    let source = this.state.graph.nodes[link.source];
                    let target = this.state.graph.nodes[link.target];
                     return (
-                      <line 
-                      key={link.id} 
-                      x1={source.x} y1={source.y} x2={target.x} y2={target.y} 
-                      strokeWidth="4" stroke="black" 
-                      onClick={e=>{
+                      <Line 
+                      id={link.id} 
+                      x1={source.x} y1={source.y} x2={target.x} y2={target.y} xShift={75} yShift={30}
+                      onClick={e=> {
                            const {offsetX, offsetY, clientX, clientY, button} = e.nativeEvent
                            this.setState({linkOptions: {left: offsetX, top: offsetY, id: link.id }})
                       }}
