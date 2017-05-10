@@ -1,11 +1,10 @@
-import React, { Component } from 'react';
+import React from 'react';
 import { connect } from 'react-redux';
-import styled from 'styled-components';
-import _ from 'lodash';
-import * as d3 from 'd3';
-import PropTypes from 'prop-types';
-import {rxBus, rxActions} from './rxBus';
-import Rx from 'rxjs';
+// import styled from 'styled-components';
+// import _ from 'lodash';
+// import * as d3 from 'd3';
+import {rxActions} from './rxBus'; //rxBus
+// import Rx from 'rxjs';
 import ZoomContainer from './ZoomContainer'
 
 function mapStateToProps(state) {
@@ -23,10 +22,16 @@ function mapDispatchToProps(dispatch) {
 class GraphMaker extends React.Component {
 
     componentWillMount(){
-        console.log(rxActions)
      }
     render(){
-        return (<div onClick={e=>{rxBus.next('asdf')}}>hey</div>)
+        return (
+        <div >
+        <ZoomContainer>
+            <h1>hey</h1>
+        </ZoomContainer>
+
+        </div>
+        )
     }
 }
 

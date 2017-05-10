@@ -2,9 +2,10 @@ import Rx from 'rxjs';
 import {rxBus, rxActions} from './rxBus';
 import {store} from './index';
 
-//pan ---------------------------------------------------------------------------------------------- pan
-let panStart$ = rxBus.middleMouseDown$.do(_ => 
-store.dispatch({type: 'SET_PAN_START', panStart: {x: store.getState().panX, y: store.getState().panY } })
+// //pan ---------------------------------------------------------------------------------------------- pan
+// let panStart$ = rxBus.middleMouseDown$.do(_ => 
+// store.dispatch({type: 'SET_PAN_START', panStart: {x: } })
+//     .do(x => this.setState({ panStart: { x: this.state.panX, y: this.state.panY } }))
 // let panEnd$ = subj.filter(action => action.type === 'mouseUp').do(x => console.log(x))
 // const setPan = (panStart, moveData) => {
 //     let { x, y } = this.state.panStart;
