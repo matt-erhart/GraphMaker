@@ -16,8 +16,18 @@ let rootReducer = combineReducers({
   interactionStart: reducers.interactionStart,
   linkOptions: reducers.linkOptions
 })
+
+let initialState = {
+  graph:{links: {}, nodes: {}},
+  panZoomSize: {zoomScaleFactor: 1, panX: 0, panY: 0, panStart: { x: 0, y: 0 },
+  graphWidth: 1500, graphHeight: 1000},
+  interactionStart: { dragStart: { x: 0, y: 0 }, linkStart: { nodeID: '' } },
+  linkOptions: {}
+}
+
   return createStore(
     rootReducer,
+    initialState,
     composeWithDevTools(applyMiddleware(...middlewares))
   );
 };

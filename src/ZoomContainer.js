@@ -5,8 +5,6 @@ import {buttonFromNum, subj} from './constants'
 import {rxBus, rxActions} from './rxBus';
 import { connect } from 'react-redux';
 
-
-
 export const ZoomDivContainer = styled.div`
   overflow: hidden;
   border: 1px solid black;
@@ -22,7 +20,6 @@ export const ZoomDiv = styled.div`
 function mapStateToProps(state) {
   return { 
     panZoomSize: state.panZoomSize,
-    interactionStart: state.interactionStart
  }
 }
 
@@ -38,18 +35,20 @@ function mapDispatchToProps(dispatch) {
 class ZoomContainer extends React.Component {
 
   componentWillMount(){
-     let {panX, panY, zoomScaleFactor, graphWidth, Height} = this.props.panZoomSize;
+     let {panX, panY, zoomScaleFactor, graphWidth, graphHeight} = this.props.panZoomSize;
      let {middleMouseDown$, mouseUp$, mouseMove$} = rxActions;
     //pan ---------------------------------------------------------------------------------------------- pan
-    let panStart$ = middleMouseDown$.do(x => {this.props.setPanStart({x: this.props.panZoomSize.panX, y: this.props.panZoomSize.panY})})
+    let panStart$ = middleMouseDown$.do(x => {
+      this.props.setPanStart({x: this.props.panZoomSize.panX, y: this.props.panZoomSize.panY})})
     let panEnd$ = mouseUp$.do(x => console.log(x))
     const setPan = (panStart, moveData) => {
-        let { x, y } = this.props.interactionStart.panStart;
-        let dx = (moveData.clientX - panStart.clientX) / this.props.panZoomSize.zoomScaleFactor;
-        let dy = (moveData.clientY - panStart.clientY) / this.props.panZoomSize.zoomScaleFactor;
+        let {zoomScaleFactor} = this.props.panZoomSize;
+        let { x, y } = this.props.panZoomSize.panStart;
+        let dx = (moveData.clientX - panStart.clientX) / zoomScaleFactor;
+        let dy = (moveData.clientY - panStart.clientY) / zoomScaleFactor;
         console.log('setpan', x,y,dx,dy)
-        this.props.setPanX(x + dx );
-        this.props.setPanY(y + dy );
+        this.props.setPanX( x + dx );
+        this.props.setPanY( y + dy );
     }
     let pan$ = panStart$.switchMap(panStart => {
         return mouseMove$.do(moveData => setPan(panStart, moveData)).takeUntil(panEnd$)

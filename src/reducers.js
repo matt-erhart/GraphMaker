@@ -22,6 +22,7 @@ export const panZoomSize = (state = {
         case 'SET_PANY': return { ...state, panY: action.panY };
         case 'SET_GRAPH_WIDTH': return { ...state, graphWidth: action.graphWidth };
         case 'SET_GRAPH_HEIGHT': return { ...state, graphHeight: action.graphHeight };
+        case 'SET_PAN_START': return {  ...state, panStart: action.panStart };
         default: return state
     }
 }
@@ -30,7 +31,6 @@ const interactionStartDefaults = { dragStart: { x: 0, y: 0 }, panStart: { x: 0, 
 export const interactionStart = (state = interactionStartDefaults, action) => {
     switch (action.type) {
         case 'SET_DRAG_START': return { ...state, dragStart: action.dragStart };
-        case 'SET_PAN_START': return {  ...state, panStart: action.panStart };
         case 'SET_LINK_START': return { ...state, linkStart: action.linkStart };
         default: return state
     }
