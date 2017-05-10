@@ -20,7 +20,7 @@ function mapStateToProps(state) {
 
 function mapDispatchToProps(dispatch) {
   return {
-    setGraph: (graph) => dispatch({type: 'SET_GRAPH', graph}),
+    setGraph:     (graph) => dispatch({type: 'SET_GRAPH', graph}),
     setDragStart: (graph) => dispatch({type: 'SET_GRAPH', graph})
   }
 }

@@ -39,7 +39,6 @@ class NodeDiv extends React.Component {
 
     return (
       <NodeDiv key={node.id} style={{ left: x, top: y }} onContextMenu={e => e.stopPropagation()}>
-        {/*//drag ---------------------------------------------------------------------------------- drag*/}
         <span style={{ cursor: 'move' }}
           onMouseDown={e => {
             publishClientXY('dragStart$', e)
@@ -49,20 +48,20 @@ class NodeDiv extends React.Component {
           onMouseUp={e => { e.stopPropagation(); rxBus.next({ type: 'mouseUp$', id: node.id }) }}>
           drag</span>
 
-        {/*//create link ------------------------------------------------------------------------------ create link*/}
         <span 
           onClick={e =>     { publishClientXY('linkClick$', e) }}
           onMouseDown={e => { publishClientXY('linkMouseDown$', e) }}
           onMouseUp  ={e => { publishClientXY('linkMouseUp$', e) }}
           style={{ cursor: 'alias' }}> link </span>
 
-        {/*//select --------------------------------------------------------------------------------------------------- select*/}
-        <span onClick={e => { rxBus.next({ type: 'select', id: node.id }) }} style={{ cursor: 'cell' }}>select </span>
-        {/*//delete --------------------------------------------------------------------------------------------------- delete*/}
+        <span onClick={e => { rxBus.next({ type: 'select', id: node.id }) }} 
+          style={{ cursor: 'cell' }}>select </span>
         <span style={{ cursor: 'crosshair' }}>delete</span>
         <TextArea rows='1' autoFocus
           onClick={e => e.stopPropagation()}
-          onBlur={e => this.setState({ graph: { ...this.state.graph, nodes: { ...this.state.graph.nodes, [node.id]: { ...node, text: e.target.value } } } })}
+          onBlur={e => 
+          this.setState({ graph: { ...this.state.graph, 
+          nodes: { ...this.state.graph.nodes, [node.id]: { ...node, text: e.target.value } } } })}
         ></TextArea>
       </NodeDiv>
     )

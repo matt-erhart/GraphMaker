@@ -4,6 +4,8 @@ export const graph = (state = { nodes: {}, links: {} }, action) => {
     switch (action.type) {
         case 'SET_GRAPH': return action.graph
         case 'GET_LOCAL_STORAGE_GRAPH': return action.graph
+        case 'SET_NODE': return {...state, nodes: {...state.nodes, [action.node.id]: action.node}}
+        case 'SET_LINK': return {...state, links: {...state.links, [action.link.id]: action.link}}
         default: return state
     }
 }
