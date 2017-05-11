@@ -38,14 +38,15 @@ let dnd$ = e$.dragStart.obs.mergeMap(action => e$.mouseMove.obs.takeUntil(e$.mou
     let dx = (moveData.clientX - action.clientX) / state.panZoomSize.zoomScaleFactor;
     let dy = (moveData.clientY - action.clientY) / state.panZoomSize.zoomScaleFactor;
     let newNode = { ...oldNode, x: x + dx, y: y + dy }; 
-    store.dispatch({type: 'SET_NODE', newNode })
+    console.log('draged node', newNode)
+    store.dispatch({type: 'SET_NODE', node: newNode })
 }))
 
 //make links
 const initLink = (link1) => {
     const state = store.getState();
     if (state.interactionStart.linkStart.nodeID === '') {
-        let { x, y, id } = this.state.graph.nodes[link1.id];
+        let { x, y, id } = state.graph.nodes[link1.id];
         store.dispatch({type: 'SET_LINK_START', linkStart: { nodeID: id, x1: x, y1: y }})
     }
 }
@@ -53,10 +54,10 @@ const initLink = (link1) => {
 //view link while making it
 const previewLink = (link1, moveData) => {
     const state = store.getState();
-    let { x1, y1 } = this.state.interactionStart.linkStart;
+    let { x1, y1 } = state.interactionStart.linkStart;
     let dx = (moveData.clientX - link1.clientX) / state.panZoomSize.zoomScaleFactor;
     let dy = (moveData.clientY - link1.clientY) / state.panZoomSize.zoomScaleFactor;
-    let newLink = { ...this.state.interactionStart.linkStart, x2: x1 + dx, y2: y1 + dy };
+    let newLink = { ...state.interactionStart.linkStart, x2: x1 + dx, y2: y1 + dy };
     store.dispatch({type: 'SET_LINK_START', linkStart: newLink})
 }
 
@@ -82,7 +83,6 @@ let addLink$ = initLink$.switchMap(link1 => {
         .takeUntil(stopPreview$.do(click2 => setLink(link1, click2)))
 }).repeat();
 
-
 //pan 
 let panStart$ = e$.middleMouseDown.obs.do(x => {
     const state = store.getState();
@@ -97,7 +97,6 @@ const setPan = (panStart, moveData) => {
     let dy = (moveData.clientY - panStart.clientY) / state.panZoomSize.zoomScaleFactor;
     store.dispatch({type: 'SET_PANX', panX: x+dx})
     store.dispatch({type: 'SET_PANY', panY: y+dy})
-
 }
 let pan$ = panStart$.switchMap(panStart => {
     return e$.mouseMove.obs.do(moveData => setPan(panStart, moveData)).takeUntil(panEnd$)

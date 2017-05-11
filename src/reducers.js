@@ -40,7 +40,7 @@ export const interactionStart = (state = interactionStartDefaults, action) => {
 
 export const linkOptions = (state = {}, action) => {
     switch (action.type) {
-        case 'SET_LINK_OPTIONS': return { ...state, linkOptions: action.linkOptions }; //check this in appjs
+        case 'SET_LINK_OPTIONS': return  action.linkOptions ; //check this in appjs
         default: return state
     }
 }

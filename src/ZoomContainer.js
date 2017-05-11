@@ -1,7 +1,6 @@
 import React from 'react';
 import styled from 'styled-components'
 import Rx from 'rxjs'
-import { buttonFromNum, subj } from './constants'
 import { rxBus, e$ } from './rxBus';
 import { connect } from 'react-redux';
 

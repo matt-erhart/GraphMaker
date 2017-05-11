@@ -1,9 +1,9 @@
 import React from 'react';
 import styled from 'styled-components'
-import { rxBus, rxActions } from './rxBus';
+import { rxBus, e$ } from './rxBus';
 import TextArea from './TextArea'
-import _ from './lodash'
-
+import _ from 'lodash'
+import { connect } from 'react-redux';
 const NodeDivCss = styled.div`
   position: absolute;
   padding: 0;
@@ -13,7 +13,7 @@ const NodeDivCss = styled.div`
   background-color: lightblue;
   opacity: .99;
 `
-const publishClientXY = (rxActionName, e) => {
+const publishClientXY = (rxActionName, e, node) => {
   const { clientX, clientY } = e.nativeEvent
   e.stopPropagation(); e.preventDefault();
   rxBus.next({ type: rxActionName, id: node.id, clientX, clientY });
@@ -27,8 +27,8 @@ function mapStateToProps(state) {
 
 function mapDispatchToProps(dispatch) {
   return {
-    setDragStart: (zoomScaleFactor) => dispatch({type: 'SET_ZOOM', zoomScaleFactor}),
-
+    setNode: (node) => dispatch({type: 'SET_NODE', node}),
+    setDragStart: (dragStart) => dispatch({type: 'SET_DRAG_START', dragStart})
   }
 }
 
@@ -38,20 +38,20 @@ class NodeDiv extends React.Component {
     const {x,y} = node;
 
     return (
-      <NodeDiv key={node.id} style={{ left: x, top: y }} onContextMenu={e => e.stopPropagation()}>
+      <NodeDivCss key={node.id} style={{ left: x, top: y }} onContextMenu={e => e.stopPropagation()}>
         <span style={{ cursor: 'move' }}
           onMouseDown={e => {
-            publishClientXY('dragStart$', e)
+            publishClientXY(e$.dragStart.str, e, node)
             this.props.setDragStart({ x: node.x, y: node.y } ) //redux
           }}
           onClick={e => { e.stopPropagation(); e.preventDefault(); }}
-          onMouseUp={e => { e.stopPropagation(); rxBus.next({ type: 'mouseUp$', id: node.id }) }}>
+          onMouseUp={e => { e.stopPropagation(); rxBus.next({ type: e$.mouseUp.str, id: node.id }) }}>
           drag</span>
 
         <span 
-          onClick={e =>     { publishClientXY('linkClick$', e) }}
-          onMouseDown={e => { publishClientXY('linkMouseDown$', e) }}
-          onMouseUp  ={e => { publishClientXY('linkMouseUp$', e) }}
+          onClick={e =>     { publishClientXY(e$.linkClick.str, e, node) }}
+          onMouseDown={e => { publishClientXY(e$.linkDown.str, e, node) }}
+          onMouseUp  ={e => { publishClientXY(e$.linkUp.str, e, node) }}
           style={{ cursor: 'alias' }}> link </span>
 
         <span onClick={e => { rxBus.next({ type: 'select', id: node.id }) }} 
@@ -60,11 +60,11 @@ class NodeDiv extends React.Component {
         <TextArea rows='1' autoFocus
           onClick={e => e.stopPropagation()}
           onBlur={e => 
-          this.setState({ graph: { ...this.state.graph, 
-          nodes: { ...this.state.graph.nodes, [node.id]: { ...node, text: e.target.value } } } })}
+          this.props.setNode({ ...node, text: e.target.value })}
         ></TextArea>
-      </NodeDiv>
+      </NodeDivCss>
     )
   }
 }
 
+export default connect(mapStateToProps, mapDispatchToProps)(NodeDiv)

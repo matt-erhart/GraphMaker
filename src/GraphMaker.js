@@ -1,13 +1,10 @@
 import React from 'react';
 import { connect } from 'react-redux';
-// import styled from 'styled-components';
-// import _ from 'lodash';
-// import * as d3 from 'd3';
-import {rxActions} from './rxBus'; //rxBus
-// import Rx from 'rxjs';
+import _ from 'lodash';
 import ZoomContainer from './ZoomContainer'
-// import Lines from './Lines'
-
+import NodeDiv from './NodeDiv'
+import Line from './Line'
+import LinkOptions from './LinkOptions'
 
 function mapStateToProps(state) {
     return {
@@ -19,33 +16,55 @@ function mapStateToProps(state) {
 }
 
 function mapDispatchToProps(dispatch) {
-  return {
-    setGraph:     (graph) => dispatch({type: 'SET_GRAPH', graph}),
-    setDragStart: (graph) => dispatch({type: 'SET_GRAPH', graph})
-  }
+    return {
+        setGraph: (graph) => dispatch({ type: 'SET_GRAPH', graph }),
+        setLink: (link) => dispatch({ type: 'SET_GRAPH', link }),
+        setDragStart: (graph) => dispatch({ type: 'SET_GRAPH', graph }),
+        setLinkOptions: (linkOptions) => dispatch({ type: 'SET_LINK_OPTIONS', linkOptions })
+    }
 }
 
 class GraphMaker extends React.Component {
 
-    componentWillMount(){
-     }
-    render(){
-      const {panX, panY, zoomScaleFactor, 
-          graphWidth, graphHeight} = this.props.panZoomSize;
-      const {nodes, links} = this.props.graph;
-
+    componentWillMount() {
+    }
+    render() {
+        const { panX, panY, zoomScaleFactor,
+            graphWidth, graphHeight } = this.props.panZoomSize;
+        const { nodes, links } = this.props.graph;
+        const { linkOptions } = this.props;
+        const { linkStart } = this.props.interactionStart;
 
         return (
-        <div >
-        <ZoomContainer>
-            <svg width={graphWidth} height={graphHeight}>
-            </svg>
+            <div >
+                <ZoomContainer>
+                    <svg width={graphWidth} height={graphHeight}>
+                        {linkStart.hasOwnProperty('x2') &&
+                            <Line {..._.omit(linkStart, 'nodeID') } xShift={75} yShift={30} />
+                        }
+                        {_.map(links, link => {
+                            let source = nodes[link.source];
+                            let target = nodes[link.target];
+                            return (
+                                <Line key={link.id} x1={source.x} y1={source.y} x2={target.x} y2={target.y}
+                                    id={link.id} xShift={75} yShift={30}
+                                    onClick={e => {
+                                        const { offsetX, offsetY } = e.nativeEvent
+                                        this.props.setLinkOptions({ left: offsetX, top: offsetY, id: link.id })
+                                    }}
+                                />
+                            )
+                        })}
+                    </svg>
+                    {/*HTML LAYER zooms pans with svg layer*/}
+                    {_.map(this.props.graph.nodes, node => {
+                        return (<NodeDiv key={node.id} node={node} />)
+                    })
+                    }
+                    {linkOptions.hasOwnProperty('id') && <LinkOptions />}
 
-
-
-        </ZoomContainer>
-
-        </div>
+                </ZoomContainer>
+            </div>
         )
     }
 }

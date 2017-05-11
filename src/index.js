@@ -1,6 +1,5 @@
 import React from 'react';
 import GraphMaker from './GraphMaker';
-import './index.css';
 import PropTypes from 'prop-types';
 import configureStore from './configureStore'; //this is where redux state starts
 import { Provider } from 'react-redux'; //passes store into the app

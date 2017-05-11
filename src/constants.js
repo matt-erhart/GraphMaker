@@ -1,1 +1,0 @@
-export const buttonFromNum = {0: 'left', 1: 'middle', 2:'right'}
