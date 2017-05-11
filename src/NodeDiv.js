@@ -54,7 +54,10 @@ class NodeDiv extends React.Component {
     const {x,y} = node;
 
     return (
-      <NodeDivCss key={node.id} style={{ left: x, top: y }} onContextMenu={e => e.stopPropagation()}>
+      <NodeDivCss key={node.id} style={{ left: x, top: y }} 
+      onContextMenu={e => e.stopPropagation()}
+      onMouseUp  ={e => { publishClientXY(e$.linkUp.str, e, node) }}
+      >
        <MenuDivCss >
         <span style={{ cursor: 'move' }}
           onMouseDown={e => {
