@@ -6,7 +6,7 @@ const TextArea = styled.textarea`
   box-sizing: padding-box;
   overflow:hidden;
   background-color: lightblue;
-  padding:10px;
+  padding:3px;
   width:150px;
   font-size:14px;
   margin:50px auto;

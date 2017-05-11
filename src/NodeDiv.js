@@ -12,7 +12,22 @@ const NodeDivCss = styled.div`
   border-radius:6px;
   background-color: lightblue;
   opacity: .99;
+  &:hover > div{
+   opacity: 1;
+  }
 `
+
+const MenuDivCss = styled.div`
+  opacity: 0;
+  left: -0px;
+  top: -20px;
+  height: 40px;
+  position: absolute;
+  &:hover {
+   opacity: 0;
+  }
+`
+
 const publishClientXY = (rxActionName, e, node) => {
   const { clientX, clientY } = e.nativeEvent
   e.stopPropagation(); e.preventDefault();
@@ -39,6 +54,7 @@ class NodeDiv extends React.Component {
 
     return (
       <NodeDivCss key={node.id} style={{ left: x, top: y }} onContextMenu={e => e.stopPropagation()}>
+       <MenuDivCss >
         <span style={{ cursor: 'move' }}
           onMouseDown={e => {
             publishClientXY(e$.dragStart.str, e, node)
@@ -57,11 +73,15 @@ class NodeDiv extends React.Component {
         <span onClick={e => { rxBus.next({ type: 'select', id: node.id }) }} 
           style={{ cursor: 'cell' }}>select </span>
         <span style={{ cursor: 'crosshair' }}>delete</span>
-        <TextArea rows='1' autoFocus
+      </MenuDivCss>
+        <TextArea rows='1' autoFocus value={node.text}
           onClick={e => e.stopPropagation()}
           onBlur={e => 
           this.props.setNode({ ...node, text: e.target.value })}
+          onChange={e => 
+          this.props.setNode({ ...node, text: e.target.value })}
         ></TextArea>
+
       </NodeDivCss>
     )
   }
