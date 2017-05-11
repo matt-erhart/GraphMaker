@@ -5,7 +5,8 @@ import ZoomContainer from './ZoomContainer'
 import NodeDiv from './NodeDiv'
 import Line from './Line'
 import LinkOptions from './LinkOptions'
-
+import { firebaseConnect, isLoaded, isEmpty, dataToJS } from 'react-redux-firebase'
+import GraphIO from './GraphIO'
 function mapStateToProps(state) {
     return {
         graph: state.graph,
@@ -18,14 +19,11 @@ function mapStateToProps(state) {
 function mapDispatchToProps(dispatch) {
     return {
         setGraph: (graph) => dispatch({ type: 'SET_GRAPH', graph }),
-        setLink: (link) => dispatch({ type: 'SET_GRAPH', link }),
-        setDragStart: (graph) => dispatch({ type: 'SET_GRAPH', graph }),
         setLinkOptions: (linkOptions) => dispatch({ type: 'SET_LINK_OPTIONS', linkOptions })
     }
 }
 
 class GraphMaker extends React.Component {
-
     componentWillMount() {
     }
     render() {
@@ -64,9 +62,18 @@ class GraphMaker extends React.Component {
                     {linkOptions.hasOwnProperty('id') && <LinkOptions />}
 
                 </ZoomContainer>
+                <GraphIO></GraphIO>
             </div>
         )
     }
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(GraphMaker)
+const connected = connect(mapStateToProps, mapDispatchToProps)(GraphMaker)
+const fireBasedComponent = firebaseConnect(['/graphs', '/graphNames'])(connected)
+
+export default connect(
+  ({firebase}) => ({
+    graphs: dataToJS(firebase, 'graphs'),
+    graphNames: dataToJS(firebase, 'graphNames'),
+  })
+)(fireBasedComponent)
