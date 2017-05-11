@@ -15,6 +15,7 @@ export const graph = (state = { nodes: {}, links: {} }, action) => {
         case 'SET_NODE': return {...state, nodes: {...state.nodes, [action.node.id]: action.node}}
         case 'SET_LINK': return {...state, links: {...state.links, [action.link.id]: action.link}}
         case 'REMOVE_NODE': return removeNodeAndItsLinks(state, action)
+        case 'REMOVE_LINK': return {...state, links: _.omit(state.links, action.id)}
         default: return state
     }
 }

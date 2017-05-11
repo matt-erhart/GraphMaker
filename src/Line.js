@@ -16,6 +16,10 @@ const Line = (props) => {
         <LineCss 
         x1={x1+xShift} y1={y1+yShift} x2={x2+xShift} y2={y2+yShift} 
         onClick={e=> onClick(e)}
+        onContextMenu={e=> {
+                    e.preventDefault();
+                }
+            }
         />
     )
 }

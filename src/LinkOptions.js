@@ -18,6 +18,7 @@ function mapStateToProps(state) {
 function mapDispatchToProps(dispatch) {
     return {
         setLink: (link) => dispatch({ type: 'SET_LINK', link }),
+        removeLink: (id) => dispatch({ type: 'REMOVE_LINK', id }),
         setLinkOptions: (linkOptions) => dispatch({ type: 'SET_LINK_OPTIONS', linkOptions })
     }
 }
@@ -27,8 +28,9 @@ class LinkOptions extends React.Component {
         const {links, nodes} = this.props.graph;
         const {linkOptions} = this.props; //maybe rename floating menus?
         return (
+            <span style={{ left: linkOptions.left, top: linkOptions.top, position: 'absolute' }}>
         <input autoFocus value={links[linkOptions.id].label}
-            style={{ left: linkOptions.left, top: linkOptions.top, position: 'absolute' }}
+            
             onChange={e => {
                 const linkToUpdate = links[linkOptions.id];
                 this.props.setLink({ ...linkToUpdate, label: e.target.value })
@@ -36,14 +38,19 @@ class LinkOptions extends React.Component {
             onBlur={e => {
                 const linkToUpdate = links[linkOptions.id];
                 this.props.setLink({ ...linkToUpdate, label: e.target.value })
-                this.props.setLinkOptions({ })
             }}
             onKeyUp={e => {
-                if (e.key === 'Enter') {
+                if (e.key === 'Enter' || e.key === 'Esc') {
                     this.props.setLinkOptions({ })
                 }
             }}
             type="text" />
+            <button onClick={e =>{ 
+                console.log('button-------------------------------------------------------------')
+                this.props.removeLink(linkOptions.id)
+                this.props.setLinkOptions({ })
+                }}>X</button>
+            </span>
         )
     } 
 }
