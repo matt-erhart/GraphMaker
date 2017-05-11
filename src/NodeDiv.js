@@ -43,6 +43,7 @@ function mapStateToProps(state) {
 function mapDispatchToProps(dispatch) {
   return {
     setNode: (node) => dispatch({type: 'SET_NODE', node}),
+    removeNode: (node) => dispatch({type: 'REMOVE_NODE', node}),
     setDragStart: (dragStart) => dispatch({type: 'SET_DRAG_START', dragStart})
   }
 }
@@ -72,7 +73,7 @@ class NodeDiv extends React.Component {
 
         <span onClick={e => { rxBus.next({ type: 'select', id: node.id }) }} 
           style={{ cursor: 'cell' }}>select </span>
-        <span style={{ cursor: 'crosshair' }}>delete</span>
+        <span style={{ cursor: 'crosshair' }} onClick={e=>{this.props.removeNode(node)}}>delete</span>
       </MenuDivCss>
         <TextArea rows='1' autoFocus value={node.text}
           onClick={e => e.stopPropagation()}

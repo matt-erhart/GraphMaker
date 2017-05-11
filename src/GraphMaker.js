@@ -38,14 +38,14 @@ class GraphMaker extends React.Component {
                 <ZoomContainer>
                     <svg width={graphWidth} height={graphHeight}>
                         {linkStart.hasOwnProperty('x2') &&
-                            <Line {..._.omit(linkStart, 'nodeID') } xShift={75} yShift={30} />
+                            <Line {..._.omit(linkStart, 'nodeID') } xShift={75} yShift={10} />
                         }
                         {_.map(links, link => {
                             let source = nodes[link.source];
                             let target = nodes[link.target];
                             return (
                                 <Line key={link.id} x1={source.x} y1={source.y} x2={target.x} y2={target.y}
-                                    id={link.id} xShift={75} yShift={30}
+                                    id={link.id} xShift={75} yShift={10}
                                     onClick={e => {
                                         const { offsetX, offsetY } = e.nativeEvent
                                         this.props.setLinkOptions({ left: offsetX, top: offsetY, id: link.id })
