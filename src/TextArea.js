@@ -1,11 +1,13 @@
 import React from 'react';
 import styled from 'styled-components'
+import TextareaAutosize from 'react-autosize-textarea';
 
-const TextArea = styled.textarea`
+const TextArea = styled(TextareaAutosize)`
   display:block;
   box-sizing: padding-box;
   overflow:hidden;
-  background-color: lightblue;
+  background-color: #2C6CC3;
+  color: white;
   padding:3px;
   width:150px;
   font-size:14px;
@@ -15,6 +17,7 @@ const TextArea = styled.textarea`
   opacity: .8;
   white-space: normal;
   text-align: center;
+  font-weight: bold;
   outline: none;
   margin: 0;
   &:focus {

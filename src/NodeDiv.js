@@ -10,21 +10,42 @@ const NodeDivCss = styled.div`
   margin: 0;
   border: grey solid thin;
   border-radius:6px;
-  background-color: lightblue;
+  background-color: white;
   opacity: .99;
   &:hover > div{
+   transition: all 0.2s ease-in-out .05s;
    opacity: 1;
   }
 `
 
 const MenuDivCss = styled.div`
+  width: 160px;
+  display: flex;
+  justify-content: space-between
   opacity: 0;
   left: -0px;
-  top: -20px;
+  top: -25px;
   height: 40px;
   position: absolute;
+  font-size: .7em;
   &:hover {
    opacity: 0;
+  }
+`
+const MenuItemCss = styled.i`
+  flex: 0;
+  &:hover {
+    font-weight: 500;
+  }
+
+`
+
+const RemoveNode = styled(MenuItemCss)`
+  cursor: default;
+  color: black;
+  &:hover {
+    color: red;
+    font-weight: bold;
   }
 `
 
@@ -59,26 +80,25 @@ class NodeDiv extends React.Component {
       onMouseUp  ={e => { publishClientXY(e$.linkUp.str, e, node) }}
       >
        <MenuDivCss >
-        <span style={{ cursor: 'move' }}
+        <MenuItemCss style={{ cursor: 'move' }} title="move node" className="material-icons"
           onMouseDown={e => {
             publishClientXY(e$.dragStart.str, e, node)
             this.props.setDragStart({ x: node.x, y: node.y } ) //redux
           }}
           onClick={e => { e.stopPropagation(); e.preventDefault(); }}
           onMouseUp={e => { e.stopPropagation(); rxBus.next({ type: e$.mouseUp.str, id: node.id }) }}>
-          drag</span>
+          open_with</MenuItemCss>
 
-        <span 
+        <MenuItemCss className="material-icons" title="link nodes"
           onClick={e =>     { publishClientXY(e$.linkClick.str, e, node) }}
           onMouseDown={e => { publishClientXY(e$.linkDown.str, e, node) }}
           onMouseUp  ={e => { publishClientXY(e$.linkUp.str, e, node) }}
-          style={{ cursor: 'alias' }}> link </span>
+          style={{ cursor: 'alias' }}> call_made </MenuItemCss>
 
-        <span onClick={e => { rxBus.next({ type: 'select', id: node.id }) }} 
-          style={{ cursor: 'cell' }}>select </span>
-        <span style={{ cursor: 'crosshair' }} onClick={e=>{this.props.removeNode(node)}}>delete</span>
+        <RemoveNode title='DELETE NODE' onClick={e=>{this.props.removeNode(node)}} className="material-icons">clear</RemoveNode>
+
       </MenuDivCss>
-        <TextArea rows='1' autoFocus value={node.text}
+        <TextArea rows={1} autoFocus value={node.text}
           onClick={e => e.stopPropagation()}
           onBlur={e => 
           this.props.setNode({ ...node, text: e.target.value })}

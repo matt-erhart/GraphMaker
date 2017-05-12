@@ -57,9 +57,9 @@ const previewLink = (link1, moveData) => {
     let { x1, y1 } = state.interactionStart.linkStart;
     let dx = (moveData.clientX - link1.clientX) / state.panZoomSize.zoomScaleFactor;
     let dy = (moveData.clientY - link1.clientY) / state.panZoomSize.zoomScaleFactor;
-    let shiftToAlignWithCursor = -30;
+    let shiftToAlignWithCursor = -23;
     let newLink = { ...state.interactionStart.linkStart, 
-        x2: x1 + dx + shiftToAlignWithCursor, 
+        x2: x1 + dx + 5, 
         y2: y1 + dy + shiftToAlignWithCursor};
     store.dispatch({type: 'SET_LINK_START', linkStart: newLink})
 }

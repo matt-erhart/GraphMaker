@@ -13,7 +13,7 @@ function mapStateToProps(state) {
         interactionStart: state.interactionStart,
         linkOptions: state.linkOptions
     }
-    }
+}
 
 function mapDispatchToProps(dispatch) {
     return {
@@ -29,7 +29,7 @@ class LinkOptions extends React.Component {
         const {linkOptions} = this.props; //maybe rename floating menus?
         return (
             <span style={{ left: linkOptions.left, top: linkOptions.top, position: 'absolute' }}>
-        <input autoFocus value={links[linkOptions.id].label}
+        <input autoFocus value={links[linkOptions.id].label} placeholder="Link label then enter."
             
             onChange={e => {
                 const linkToUpdate = links[linkOptions.id];
@@ -45,7 +45,7 @@ class LinkOptions extends React.Component {
                 }
             }}
             type="text" />
-            <button onClick={e =>{ 
+            <button  title="delete link" onClick={e =>{ 
                 console.log('button-------------------------------------------------------------')
                 this.props.removeLink(linkOptions.id)
                 this.props.setLinkOptions({ })
