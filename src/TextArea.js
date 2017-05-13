@@ -6,7 +6,7 @@ const TextArea = styled(TextareaAutosize)`
   display:block;
   box-sizing: padding-box;
   overflow:hidden;
-  background-color: #2C6CC3;
+  background-color: ${props => props.readOnly? '#2C6CC3': 'grey'};
   color: white;
   padding:3px;
   width:150px;

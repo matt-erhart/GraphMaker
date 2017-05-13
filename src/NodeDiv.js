@@ -4,6 +4,8 @@ import { rxBus, e$ } from './rxBus';
 import TextArea from './TextArea'
 import _ from 'lodash'
 import { connect } from 'react-redux';
+import ReactDOM from 'react-dom'
+
 const NodeDivCss = styled.div`
   position: absolute;
   padding: 0;
@@ -68,6 +70,11 @@ function mapDispatchToProps(dispatch) {
     setDragStart: (dragStart) => dispatch({type: 'SET_DRAG_START', dragStart})
   }
 }
+const focusUsernameInputField = input => {
+  if (input) {
+    setTimeout(() => input.focus(), 100);
+  }
+};
 
 class NodeDiv extends React.Component {
   render() {
@@ -98,12 +105,26 @@ class NodeDiv extends React.Component {
         <RemoveNode title='DELETE NODE' onClick={e=>{this.props.removeNode(node)}} className="material-icons">clear</RemoveNode>
 
       </MenuDivCss>
-        <TextArea rows={1} autoFocus value={node.text}
-          onClick={e => e.stopPropagation()}
+        <TextArea rows={1} autoFocus value={node.text} readOnly={node.readOnly}
+          ref={(textArea) => { this[node.id] = textArea; }}
           onBlur={e => 
-          this.props.setNode({ ...node, text: e.target.value })}
+          this.props.setNode({ ...node, text: e.target.value, readOnly: true })}
+          onDoubleClick={e=>{
+             e.stopPropagation()
+             this.props.setNode({ ...node, readOnly: false })
+             ReactDOM.findDOMNode(this[node.id]).focus()
+          }}
           onChange={e => 
           this.props.setNode({ ...node, text: e.target.value })}
+          onMouseDown={e => {
+            if (node.readOnly) {
+            publishClientXY(e$.dragStart.str, e, node)
+            this.props.setDragStart({ x: node.x, y: node.y } ) //redux
+            }
+          }}
+          onMouseUp={e => { 
+            e.stopPropagation(); rxBus.next({ type: e$.mouseUp.str, id: node.id })}
+          }>
         ></TextArea>
 
       </NodeDivCss>

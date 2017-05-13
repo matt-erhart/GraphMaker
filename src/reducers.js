@@ -1,18 +1,39 @@
 import _ from 'lodash'
 
 const removeNodeAndItsLinks = (state, action) => {
-    //get list of linkids with nodeid in source or target
     const linksWithNode = _.filter(state.links, link => _.includes(link, action.node.id));
     const links = _.omit(state.links, _.map(linksWithNode, link => link.id));
     const nodes = _.omit(state.nodes, action.node.id);
     return {nodes, links}
 }
 
+const moveNodes = (state, action) => {
+    const {ids} = state.selected.nodes;
+    const {shiftX, shiftY} = action;
+    const movedNodes = _.map(ids, id => {
+        const {x,y} = state.nodes[id];
+        return {...state.nodes[id], x: x+shiftX, y: y+shiftY}
+    })
+    return {...state, nodes: {...state.nodes, ...movedNodes}};
+}
+
+const setNodes = (state, action) => {
+    const {ids} = state.selected.nodes;
+    const {updates} = action; // e.g. {color: 'blue', category: 'cause'}
+    const updatedNodes = _.map(ids, id => {
+        return {...state.nodes[id], ...updates} 
+    })
+    return {...state, nodes: {...state.nodes, ...updatedNodes}};
+}
+
+
 export const graph = (state = { nodes: {}, links: {} }, action) => {
     switch (action.type) {
         case 'SET_GRAPH': return action.graph
         case 'GET_LOCAL_STORAGE_GRAPH': return action.graph
-        case 'SET_NODE': return {...state, nodes: {...state.nodes, [action.node.id]: action.node}}
+        case 'SET_NODE': return {...state, nodes: {...state.nodes, [action.node.id]: action.node}};
+        case 'SET_NODES': return setNodes(state, action);
+        case 'MOVE_NODES': return moveNodes(state, action);
         case 'SET_LINK': return {...state, links: {...state.links, [action.link.id]: action.link}}
         case 'REMOVE_NODE': return removeNodeAndItsLinks(state, action)
         case 'REMOVE_LINK': return {...state, links: _.omit(state.links, action.id)}
@@ -39,18 +60,31 @@ export const panZoomSize = (state = {
     }
 }
 
-const interactionStartDefaults = { dragStart: { x: 0, y: 0 }, panStart: { x: 0, y: 0 }, linkStart: { nodeID: '' } };
-export const interactionStart = (state = interactionStartDefaults, action) => {
+const interactionStartDefaults = { dragStart: { x: 0, y: 0 }, linkStart: { nodeID: '' }, 
+dragSelect: {x1:0, y1:0, x2:0, y2:0 } };
+export const interactionStart = (state = interactionStartDefaults, action) => { //more like previews with mousemove
     switch (action.type) {
         case 'SET_DRAG_START': return { ...state, dragStart: action.dragStart };
         case 'SET_LINK_START': return { ...state, linkStart: action.linkStart };
+        case 'SET_DRAG_SELECT': return { ...state, dragSelect: action.dragSelect };
         default: return state
     }
 }
 
 export const linkOptions = (state = {}, action) => {
     switch (action.type) {
-        case 'SET_LINK_OPTIONS': return  action.linkOptions ; //check this in appjs
+        case 'SET_LINK_OPTIONS': return  action.linkOptions ; 
+        default: return state
+    }
+}
+
+export const selected = (state = {nodes: [], links:[]}, action) => {
+    _.isArray(action.id)? '': console.error('id must be an array')
+    switch (action.type) {
+        case 'ADD_NODES': return     {...state, nodes: _.concat(state.nodes, action.id)}
+        case 'REMOVE_NODES': return  {...state, nodes: _.without(state.nodes, action.id)} 
+        case 'ADD_LINKS': return     {...state, links: _.concat(state.links, action.id)}
+        case 'REMOVE_LINKS': return  {...state, links: _.without(state.links, action.id)} 
         default: return state
     }
 }

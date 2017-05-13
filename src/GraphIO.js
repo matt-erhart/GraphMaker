@@ -21,7 +21,6 @@ class GraphIO extends React.Component {
     }
 
     render() { 
-        console.log('graphio',this.props)
         const {push, set, update, remove} = this.props.firebase;
         const {graphs, graphNames, graph} = this.props;
         const graphList = !isLoaded(graphs)?'Loading':isEmpty(graphs)?'empty': 

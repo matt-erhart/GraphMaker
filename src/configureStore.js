@@ -1,14 +1,13 @@
 import { createStore, applyMiddleware, combineReducers, compose } from 'redux';
 import { reactReduxFirebase, firebaseStateReducer } from 'react-redux-firebase'
 import { composeWithDevTools } from 'redux-devtools-extension';
-import { createLogger } from 'redux-logger'
 import * as reducers from './reducers';
 // import { reducer as formReducer } from 'redux-form'
 
 const configureStore = () => {
   const middlewares = [];
   if (process.env.NODE_ENV !== 'production') {
-    middlewares.push(createLogger());
+    middlewares.push();
   }
 
 let rootReducer = combineReducers({

@@ -1,8 +1,8 @@
 //rxjs helps manage complex sequences of events across any component interactions
 import Rx from 'rxjs';
 import { store } from './index';
-import _ from 'lodash'
-import uid from 'uid-safe'
+import _ from 'lodash';
+import uid from 'uid-safe';
 
 export let rxBus = new Rx.Subject();
 export let e$ = { //so we get autocomplete, e is events. $ is rxjs
@@ -22,6 +22,16 @@ export let e$ = { //so we get autocomplete, e is events. $ is rxjs
 }
 e$ = _.mapValues(e$, (val, key) => { return {str: key, obs: rxBus.filter(x => x.type === key) }}) // obs that listens for key
 
+// //Select multiple nodes
+// const dragSelectStart$ = e$.leftMouseDown.obs.do(x=>{
+//     store.dispatch({type: 'SET_DRAG_SELECT', 
+//     action: {x1: mouseDown.offsetX, y1: mouseDown.offsetY, x2: mouseDown.offsetX, y2: mouseDown.offsetX } })
+// })
+// dragSelectStart$.mergeMap(mouseDown => {
+//     const state = store.getState();
+//     let { x, y } = state.interactionStart.dragStart;
+//     e$.mouseMove.obs.takeUntil(e$.mouseUp.obs).do(moveData =>{
+// })
 
 //NODE INTERACTIONS
 const newNode = (click) => ({ id: 'node-' + uid.sync(8), x: click.offsetX, y: click.offsetY, text: '' });
@@ -38,7 +48,6 @@ let dnd$ = e$.dragStart.obs.mergeMap(action => e$.mouseMove.obs.takeUntil(e$.mou
     let dx = (moveData.clientX - action.clientX) / state.panZoomSize.zoomScaleFactor;
     let dy = (moveData.clientY - action.clientY) / state.panZoomSize.zoomScaleFactor;
     let newNode = { ...oldNode, x: x + dx, y: y + dy }; 
-    console.log('draged node', newNode)
     store.dispatch({type: 'SET_NODE', node: newNode })
 }))
 
@@ -76,7 +85,7 @@ const setLink = (link1, click2) => {
 }
 
 let linkStart$ = Rx.Observable.merge(e$.linkClick.obs, e$.linkDown.obs)
-let stopPreview$ = Rx.Observable.merge(e$.linkClick.obs, e$.clickBG.obs, e$.linkUp.obs)
+let stopPreview$ = Rx.Observable.merge(e$.linkClick.obs, e$.clickBG.obs, e$.linkUp.obs, e$.mouseUp.obs)
 /*the trick to getting this to work for any number of pairs of clicks
  is the take(1) at the begining and the repeat() at the end */
 let initLink$ = linkStart$.take(1).do(link1 => initLink(link1))
@@ -116,4 +125,4 @@ let zoom$ = e$.mouseWheel.obs
     })
 
 //each one of these listens for patterns, and we listen to them all with subscribe
-Rx.Observable.merge(addNode$, dnd$, addLink$, pan$, zoom$).subscribe(x => console.log(x));
+Rx.Observable.merge(addNode$, dnd$, addLink$, pan$, zoom$).subscribe();

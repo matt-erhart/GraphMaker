@@ -7,6 +7,7 @@ import Line from './Line'
 import LinkOptions from './LinkOptions'
 import { firebaseConnect, isLoaded, isEmpty, dataToJS } from 'react-redux-firebase'
 import GraphIO from './GraphIO'
+
 function mapStateToProps(state) {
     return {
         graph: state.graph,
