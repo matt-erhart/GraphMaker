@@ -34,22 +34,36 @@ e$ = _.mapValues(e$, (val, key) => { return {str: key, obs: rxBus.filter(x => x.
 // })
 
 //NODE INTERACTIONS
-const newNode = (click) => ({ id: 'node-' + uid.sync(8), x: click.offsetX, y: click.offsetY, text: '', selected: false });
+const newNode = (click) => ({ id: 'node-' + uid.sync(8), x: click.offsetX-78, y: click.offsetY-23, text: '', selected: false });
 let addNode$ = e$.rightClickBG.obs.do(click => {
     let node = newNode(click);
     store.dispatch({type: 'SET_NODE', node })
 })
 
 //drag nodes
-let dnd$ = e$.dragStart.obs.mergeMap(action => e$.mouseMove.obs.takeUntil(e$.mouseUp.obs).do(moveData => {
-    const state = store.getState();
-    let { x, y } = state.interactionStart.dragStart;
-    let oldNode = state.graph.nodes[action.id];
-    let dx = (moveData.clientX - action.clientX) / state.panZoomSize.zoomScaleFactor;
-    let dy = (moveData.clientY - action.clientY) / state.panZoomSize.zoomScaleFactor;
-    let newNode = { ...oldNode, x: x + dx, y: y + dy }; 
-    store.dispatch({type: 'SET_NODE', node: newNode })
-}))
+// let dnd$ = e$.dragStart.obs.mergeMap(action => e$.mouseMove.obs.takeUntil(e$.mouseUp.obs).do(moveData => {
+//     const state = store.getState();
+//     let { x, y } = state.interactionStart.dragStart;
+//     let oldNode = state.graph.nodes[action.id];
+//     let dx = (moveData.clientX - action.clientX) / state.panZoomSize.zoomScaleFactor;
+//     let dy = (moveData.clientY - action.clientY) / state.panZoomSize.zoomScaleFactor;
+//     let newNode = { ...oldNode, x: x + dx, y: y + dy }; 
+//     store.dispatch({type: 'SET_NODE', node: newNode })
+// }))
+
+let dnd$ = e$.dragStart.obs.mergeMap(action => e$.mouseMove.obs.takeUntil(e$.mouseUp.obs)
+            .bufferCount(2,1).do(mouseMoveData => {
+                const [prevMouse, currMouse] = mouseMoveData;
+                if (prevMouse && currMouse){
+                    const state = store.getState();
+                    const draggedNode = state.graph.nodes[action.id];
+                    if (!draggedNode.selected) store.dispatch({type: 'SET_NODE', node: {...draggedNode, selected: true} })
+                    const shiftX = (currMouse.clientX - prevMouse.clientX) / state.panZoomSize.zoomScaleFactor;
+                    const shiftY = (currMouse.clientY - prevMouse.clientY) / state.panZoomSize.zoomScaleFactor;
+                store.dispatch({type: 'MOVE_SELECTED_NODES', shiftX, shiftY })
+                }
+                
+            }))
 
 //make links
 const initLink = (link1) => {

@@ -10,9 +10,10 @@ const removeNodeAndItsLinks = (state, action) => {
 const moveSelectedNodes = (state, action) => {
     const {shiftX, shiftY} = action;
     const selectedNodes = _.filter(state.nodes, {'selected': true}) //reselect
-    const movedNodes = _.map(selectedNodes, node => {
-        return {...node, x: node.x+shiftX, y: node.y+shiftY}
-    })
+    const movedNodes = _.reduce(selectedNodes, (acc, node) => {
+        return Object.assign({}, acc, {[node.id]: {...node, x: node.x+shiftX, y: node.y+shiftY}})
+    }, {})
+    console.log({...state.nodes, ...movedNodes})
     return {...state, nodes: {...state.nodes, ...movedNodes}};
 }
 
