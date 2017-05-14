@@ -7,36 +7,40 @@ const removeNodeAndItsLinks = (state, action) => {
     return {nodes, links}
 }
 
-const moveNodes = (state, action) => {
-    const {ids} = state.selected.nodes;
+const moveSelectedNodes = (state, action) => {
     const {shiftX, shiftY} = action;
-    const movedNodes = _.map(ids, id => {
-        const {x,y} = state.nodes[id];
-        return {...state.nodes[id], x: x+shiftX, y: y+shiftY}
+    const selectedNodes = _.filter(state.nodes, {'selected': true}) //reselect
+    const movedNodes = _.map(selectedNodes, node => {
+        return {...node, x: node.x+shiftX, y: node.y+shiftY}
     })
     return {...state, nodes: {...state.nodes, ...movedNodes}};
 }
 
-const setNodes = (state, action) => {
-    const {ids} = state.selected.nodes;
-    const {updates} = action; // e.g. {color: 'blue', category: 'cause'}
-    const updatedNodes = _.map(ids, id => {
-        return {...state.nodes[id], ...updates} 
+const updateNodes = (state, action) => { //selected nodes or all nodes
+    const {updates, updateSelected} = action; // e.g. {color: 'blue', category: 'cause'}
+    const selectedNodes = updateSelected? _.filter(state.nodes, {'selected': true}) : state.nodes
+    const updatedNodes = _.map(selectedNodes, node => {
+        return {...node, ...updates} 
     })
     return {...state, nodes: {...state.nodes, ...updatedNodes}};
 }
 
+// const updateNode = (state, action) => { //todo: consolidate set/update for selected/not
+//     const {nodes, selected} = action;
+//     const updatedNode = {...node, selected}
+//     return {...state, nodes: {...state.nodes, ...updatedNode}};
+// }
 
 export const graph = (state = { nodes: {}, links: {} }, action) => {
     switch (action.type) {
         case 'SET_GRAPH': return action.graph
         case 'GET_LOCAL_STORAGE_GRAPH': return action.graph
         case 'SET_NODE': return {...state, nodes: {...state.nodes, [action.node.id]: action.node}};
-        case 'SET_NODES': return setNodes(state, action);
-        case 'MOVE_NODES': return moveNodes(state, action);
+        case 'UPDATE_NODES': return updateNodes(state, action);
+        case 'MOVE_SELECTED_NODES': return moveSelectedNodes(state, action);
         case 'SET_LINK': return {...state, links: {...state.links, [action.link.id]: action.link}}
         case 'REMOVE_NODE': return removeNodeAndItsLinks(state, action)
-        case 'REMOVE_LINK': return {...state, links: _.omit(state.links, action.id)}
+        case 'REMOVE_LINK': return {...state, links: _.omit(state.links, action.id)}        
         default: return state
     }
 }

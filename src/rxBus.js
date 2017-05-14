@@ -34,7 +34,7 @@ e$ = _.mapValues(e$, (val, key) => { return {str: key, obs: rxBus.filter(x => x.
 // })
 
 //NODE INTERACTIONS
-const newNode = (click) => ({ id: 'node-' + uid.sync(8), x: click.offsetX, y: click.offsetY, text: '' });
+const newNode = (click) => ({ id: 'node-' + uid.sync(8), x: click.offsetX, y: click.offsetY, text: '', selected: false });
 let addNode$ = e$.rightClickBG.obs.do(click => {
     let node = newNode(click);
     store.dispatch({type: 'SET_NODE', node })

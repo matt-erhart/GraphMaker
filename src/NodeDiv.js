@@ -10,9 +10,7 @@ const NodeDivCss = styled.div`
   position: absolute;
   padding: 0;
   margin: 0;
-  border: grey solid thin;
-  border-radius:6px;
-  background-color: white;
+  background-color: none;
   opacity: .99;
   &:hover > div{
    transition: all 0.2s ease-in-out .05s;
@@ -67,7 +65,8 @@ function mapDispatchToProps(dispatch) {
   return {
     setNode: (node) => dispatch({type: 'SET_NODE', node}),
     removeNode: (node) => dispatch({type: 'REMOVE_NODE', node}),
-    setDragStart: (dragStart) => dispatch({type: 'SET_DRAG_START', dragStart})
+    setDragStart: (dragStart) => dispatch({type: 'SET_DRAG_START', dragStart}),
+    toggleSelected: (node) => dispatch({type: 'UPDATE_NODE', updates: {selected: !node.selected}})
   }
 }
 const focusUsernameInputField = input => {
@@ -105,8 +104,9 @@ class NodeDiv extends React.Component {
         <RemoveNode title='DELETE NODE' onClick={e=>{this.props.removeNode(node)}} className="material-icons">clear</RemoveNode>
 
       </MenuDivCss>
-        <TextArea rows={1} autoFocus value={node.text} readOnly={node.readOnly}
+        <TextArea rows={1} autoFocus value={node.text} readOnly={node.readOnly} selected={node.selected}
           ref={(textArea) => { this[node.id] = textArea; }}
+          onClick={e=>{this.props.setNode({...node, selected: !node.selected})}}
           onBlur={e => 
           this.props.setNode({ ...node, text: e.target.value, readOnly: true })}
           onDoubleClick={e=>{
