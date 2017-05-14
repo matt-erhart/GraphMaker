@@ -13,7 +13,6 @@ const moveSelectedNodes = (state, action) => {
     const movedNodes = _.reduce(selectedNodes, (acc, node) => {
         return Object.assign({}, acc, {[node.id]: {...node, x: node.x+shiftX, y: node.y+shiftY}})
     }, {})
-    console.log({...state.nodes, ...movedNodes})
     return {...state, nodes: {...state.nodes, ...movedNodes}};
 }
 

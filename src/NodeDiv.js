@@ -52,7 +52,7 @@ const RemoveNode = styled(MenuItemCss)`
 const publishClientXY = (rxActionName, e, node) => {
   const { clientX, clientY } = e.nativeEvent
   e.stopPropagation(); e.preventDefault();
-  rxBus.next({ type: rxActionName, id: node.id, clientX, clientY });
+  rxBus.next({ type: rxActionName, id: node.id, selected: node.selected, clientX, clientY });
 }
 
 function mapStateToProps(state) {
@@ -65,8 +65,7 @@ function mapDispatchToProps(dispatch) {
   return {
     setNode: (node) => dispatch({type: 'SET_NODE', node}),
     removeNode: (node) => dispatch({type: 'REMOVE_NODE', node}),
-    setDragStart: (dragStart) => dispatch({type: 'SET_DRAG_START', dragStart}),
-    toggleSelected: (node) => dispatch({type: 'UPDATE_NODE', updates: {selected: !node.selected}})
+    setDragStart: (dragStart) => dispatch({type: 'SET_DRAG_START', dragStart}), //dont need?
   }
 }
 const focusUsernameInputField = input => {
@@ -106,7 +105,6 @@ class NodeDiv extends React.Component {
       </MenuDivCss>
         <TextArea rows={1} autoFocus value={node.text} readOnly={node.readOnly} selected={node.selected}
           ref={(textArea) => { this[node.id] = textArea; }}
-          onClick={e=>{this.props.setNode({...node, selected: !node.selected})}}
           onBlur={e => 
           this.props.setNode({ ...node, text: e.target.value, readOnly: true })}
           onDoubleClick={e=>{
@@ -119,7 +117,7 @@ class NodeDiv extends React.Component {
           onMouseDown={e => {
             if (node.readOnly) {
             publishClientXY(e$.dragStart.str, e, node)
-            this.props.setDragStart({ x: node.x, y: node.y } ) //redux
+            {/*this.props.setDragStart({ x: node.x, y: node.y } ) //redux*/}
             }
           }}
           onMouseUp={e => { 

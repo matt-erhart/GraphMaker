@@ -21,17 +21,14 @@ export let e$ = { //so we get autocomplete, e is events. $ is rxjs
     linkUp: null,
 }
 e$ = _.mapValues(e$, (val, key) => { return {str: key, obs: rxBus.filter(x => x.type === key) }}) // obs that listens for key
-
-// //Select multiple nodes
-// const dragSelectStart$ = e$.leftMouseDown.obs.do(x=>{
-//     store.dispatch({type: 'SET_DRAG_SELECT', 
-//     action: {x1: mouseDown.offsetX, y1: mouseDown.offsetY, x2: mouseDown.offsetX, y2: mouseDown.offsetX } })
-// })
-// dragSelectStart$.mergeMap(mouseDown => {
-//     const state = store.getState();
-//     let { x, y } = state.interactionStart.dragStart;
-//     e$.mouseMove.obs.takeUntil(e$.mouseUp.obs).do(moveData =>{
-// })
+const downUp$ = Rx.Observable.merge(e$.dragStart.obs, e$.mouseUp.obs)
+const clickNotDrag$ = downUp$.bufferWhen(() => downUp$.debounceTime(250)).filter(x=>x.length===2).do(upDown => {
+                                const state = store.getState();
+                                const node = state.graph.nodes[upDown[0].id]
+                                console.log(state.graph.nodes, upDown[0].id, state.graph.nodes, state.graph.nodes[upDown[0].id])
+                                store.dispatch({type: 'SET_NODE', node: {...node, selected: !node.selected }}); //toggle selected on click not drag
+                            })
+  
 
 //NODE INTERACTIONS
 const newNode = (click) => ({ id: 'node-' + uid.sync(8), x: click.offsetX-78, y: click.offsetY-23, text: '', selected: false });
@@ -62,8 +59,12 @@ let dnd$ = e$.dragStart.obs.mergeMap(action => e$.mouseMove.obs.takeUntil(e$.mou
                     const shiftY = (currMouse.clientY - prevMouse.clientY) / state.panZoomSize.zoomScaleFactor;
                 store.dispatch({type: 'MOVE_SELECTED_NODES', shiftX, shiftY })
                 }
-                
-            }))
+            }).finally(_ => {
+                const state = store.getState();
+                const draggedNode = state.graph.nodes[action.id];
+
+                store.dispatch({type: 'SET_NODE', node: {...draggedNode, selected: action.selected} })
+            }) )
 
 //make links
 const initLink = (link1) => {
@@ -139,4 +140,4 @@ let zoom$ = e$.mouseWheel.obs
     })
 
 //each one of these listens for patterns, and we listen to them all with subscribe
-Rx.Observable.merge(addNode$, dnd$, addLink$, pan$, zoom$).subscribe();
+Rx.Observable.merge(addNode$, dnd$, addLink$, pan$, zoom$, clickNotDrag$).subscribe();
