@@ -38,6 +38,16 @@ class GraphMaker extends React.Component {
             <div >
                 <ZoomContainer>
                     <svg width={graphWidth} height={graphHeight}>
+                        <defs>
+                            <marker id="markerArrow1" refX="-30" refY="5" viewBox="0 0 10 10" style={{'stroke':'none', fill: 'grey'}}
+                                markerWidth="3" markerHeight="3" orient="auto">
+                                <path d="M 0 0 L 10 5 L 0 10 z" />
+                            </marker>
+                            <marker id="markerArrow2" refX="30" refY="5" viewBox="0 0 10 10" style={{'stroke':'none', fill: 'grey'}}
+                                markerWidth="3" markerHeight="3" orient="auto">
+                                <path d="M 0 0 L 10 5 L 0 10 z" />
+                            </marker>
+                        </defs>
                         {linkStart.hasOwnProperty('x2') &&
                             <Line {..._.omit(linkStart, 'nodeID') } xShift={75} yShift={10} />
                         }
@@ -46,7 +56,7 @@ class GraphMaker extends React.Component {
                             let target = nodes[link.target];
                             return (
                                 <Line key={link.id} x1={source.x} y1={source.y} x2={target.x} y2={target.y}
-                                    id={link.id} xShift={75} yShift={10}
+                                    id={link.id} xShift={75} yShift={10} markerMid="url(#markerArrow1)"
                                     onClick={e => {
                                         const { offsetX, offsetY } = e.nativeEvent
                                         this.props.setLinkOptions({ left: offsetX, top: offsetY, id: link.id })
