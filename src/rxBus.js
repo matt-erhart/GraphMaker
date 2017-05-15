@@ -21,8 +21,9 @@ export let e$ = { //so we get autocomplete, e is events. $ is rxjs
     linkUp: null,
 }
 e$ = _.mapValues(e$, (val, key) => { return {str: key, obs: rxBus.filter(x => x.type === key) }}) // obs that listens for key
-const downUp$ = Rx.Observable.merge(e$.dragStart.obs, e$.mouseUp.obs)
+const downUp$ = Rx.Observable.concat(e$.dragStart.obs.take(1), e$.mouseUp.obs.take(1)).repeat()
 const clickNotDrag$ = downUp$.bufferWhen(() => downUp$.debounceTime(250)).filter(x=>x.length===2).do(upDown => {
+                                console.log(upDown)
                                 const state = store.getState();
                                 const node = state.graph.nodes[upDown[0].id]
                                 console.log(state.graph.nodes, upDown[0].id, state.graph.nodes, state.graph.nodes[upDown[0].id])

@@ -38,6 +38,7 @@ class LinkOptions extends React.Component {
             onBlur={e => {
                 const linkToUpdate = links[linkOptions.id];
                 this.props.setLink({ ...linkToUpdate, label: e.target.value })
+                this.props.setLinkOptions({ })
             }}
             onKeyUp={e => {
                 if (e.key === 'Enter' || e.key === 'Esc') {
