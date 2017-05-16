@@ -21,10 +21,27 @@ export let e$ = { //so we get autocomplete, e is events. $ is rxjs
     linkUp: null,
 }
 e$ = _.mapValues(e$, (val, key) => { return {str: key, obs: rxBus.filter(x => x.type === key) }}) // obs that listens for key
-
-
-
 //ui stream patterns:
+
+//const dragSelect
+const dragSelect$ = e$.leftMouseDown.obs.mergeMap(action => e$.mouseMove.obs.takeUntil(e$.mouseUp.obs)
+            .do(mouseMoveData => {
+                    const {offsetX, offsetY, clientX, clientY} = action;
+                    const state = store.getState();
+                    const zoom = state.panZoomSize.zoomScaleFactor;
+                    const w = (mouseMoveData.clientX-clientX)/zoom; //dragging right positive
+                    const h = ( mouseMoveData.clientY-clientY)/zoom; //dragging down positive
+                    const x = w < 0? offsetX + w: offsetX; 
+                    const y = h < 0? offsetY + h: offsetY;
+                    const width = Math.abs(w);
+                    const height = Math.abs(h);
+                    const dragSelect = {x, y, width, height}
+                    if (width>2) store.dispatch({type: 'SET_DRAG_SELECT', dragSelect})
+                }
+            ).finally(_ => {
+                const state = store.getState();
+                console.log(state.interactionStart.dragSelect)
+            }) )
 
 //deselect all on bg click
 const downUpBG$ = Rx.Observable.merge(e$.leftMouseDown.obs.take(1), e$.mouseUp.obs.take(1)).filter(x=>x !== undefined).repeat();
@@ -153,4 +170,4 @@ let zoom$ = e$.mouseWheel.obs
     })
 
 //each one of these listens for patterns, and we listen to them all with subscribe
-Rx.Observable.merge(addNode$, dnd$, addLink$, pan$, zoom$, clickNotDrag$, deSelectAll$).subscribe();
+Rx.Observable.merge(addNode$, dnd$, addLink$, pan$, zoom$, clickNotDrag$, deSelectAll$, dragSelect$).subscribe();

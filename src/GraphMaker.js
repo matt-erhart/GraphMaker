@@ -32,7 +32,7 @@ class GraphMaker extends React.Component {
             graphWidth, graphHeight } = this.props.panZoomSize;
         const { nodes, links } = this.props.graph;
         const { linkOptions } = this.props;
-        const { linkStart } = this.props.interactionStart;
+        const { linkStart, dragSelect } = this.props.interactionStart;
 
         return (
             <div >
@@ -51,6 +51,10 @@ class GraphMaker extends React.Component {
                         {linkStart.hasOwnProperty('x2') &&
                             <Line {..._.omit(linkStart, 'nodeID') } xShift={75} yShift={10} />
                         }
+                        {dragSelect !== undefined && 
+                            <rect {...dragSelect} stroke='black' fill="none" />
+                        }
+                        
                         {_.map(links, link => {
                             let source = nodes[link.source];
                             let target = nodes[link.target];
@@ -67,7 +71,7 @@ class GraphMaker extends React.Component {
                     </svg>
                     {/*HTML LAYER zooms pans with svg layer*/}
                     {_.map(this.props.graph.nodes, node => {
-                        return (<NodeDiv key={node.id} node={node} />)
+                        return (<NodeDiv key={node.id} node={node} className='selectable' />)
                     })
                     }
                     {linkOptions.hasOwnProperty('id') && <LinkOptions />}
