@@ -35,8 +35,9 @@ const Line = (props) => {
                 }
                 }
             />
-            <text  x={midX} y={midY} textAnchor="middle" style={{stroke: 'black'}}
+            <text  x={midX} y={midY} textAnchor="middle" style={{stroke: 'black', cursor: 'default', userSelect: 'none'}}
                 onClick={e => {onClick(e); e.stopPropagation()}}
+                onMouseDown={e => {onClick(e); e.preventDefault(); e.stopPropagation()}}
                 onContextMenu={e => {
                     e.preventDefault();
                     e.stopPropagation()

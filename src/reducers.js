@@ -65,7 +65,7 @@ export const panZoomSize = (state = {
 }
 
 const interactionStartDefaults = { dragStart: { x: 0, y: 0 }, linkStart: { nodeID: '' }, 
-dragSelect: {x1:0, y1:0, x2:0, y2:0 } };
+dragSelect: {x:0, y:0, width:0, height:0 } };
 export const interactionStart = (state = interactionStartDefaults, action) => { //more like previews with mousemove
     switch (action.type) {
         case 'SET_DRAG_START': return { ...state, dragStart: action.dragStart };

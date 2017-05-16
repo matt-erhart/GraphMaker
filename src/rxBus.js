@@ -3,6 +3,7 @@ import Rx from 'rxjs';
 import { store } from './index';
 import _ from 'lodash';
 import uid from 'uid-safe';
+import * as d3qt from 'd3-quadtree'
 
 export let rxBus = new Rx.Subject();
 export let e$ = { //so we get autocomplete, e is events. $ is rxjs
@@ -22,8 +23,17 @@ export let e$ = { //so we get autocomplete, e is events. $ is rxjs
 }
 e$ = _.mapValues(e$, (val, key) => { return {str: key, obs: rxBus.filter(x => x.type === key) }}) // obs that listens for key
 //ui stream patterns:
+const nodesInRectangle = (nodes, rect) => { 
+    const {x,y,width,height} = rect;
+    const x2 = x+width; const y2=y+height;
+    return _.filter(nodes, node => {
+        return _.inRange(node.x, x, x2) && _.inRange(node.y, y, y2)
+    })
+}
+
 
 //const dragSelect
+let nodesInRectPrev = {};
 const dragSelect$ = e$.leftMouseDown.obs.mergeMap(action => e$.mouseMove.obs.takeUntil(e$.mouseUp.obs)
             .do(mouseMoveData => {
                     const {offsetX, offsetY, clientX, clientY} = action;
@@ -36,11 +46,24 @@ const dragSelect$ = e$.leftMouseDown.obs.mergeMap(action => e$.mouseMove.obs.tak
                     const width = Math.abs(w);
                     const height = Math.abs(h);
                     const dragSelect = {x, y, width, height}
+                    const nodesInRect = nodesInRectangle(state.graph.nodes, dragSelect);
+                    if (nodesInRect.length < nodesInRectPrev.length) {
+                        const nodesToRevert = _.difference(nodesInRectPrev, nodesInRect)
+                        _.forEach(nodesToRevert, (prevNode, key) => {
+                            store.dispatch({type: 'SET_NODE', node: {...prevNode, selected: false}})
+                    })} else {
+                        _.forEach(nodesInRect, (node, key) => {
+                        if (!node.selected) {
+                            store.dispatch({type: 'SET_NODE', node: {...node, selected: true}})
+                        }
+                        })
+                    }
                     if (width>2) store.dispatch({type: 'SET_DRAG_SELECT', dragSelect})
+                    nodesInRectPrev = nodesInRect
                 }
             ).finally(_ => {
-                const state = store.getState();
-                console.log(state.interactionStart.dragSelect)
+                store.dispatch({type: 'SET_DRAG_SELECT', dragSelect: {x:0,y:0,width:0,height:0}})
+                nodesInRectPrev = {};
             }) )
 
 //deselect all on bg click
