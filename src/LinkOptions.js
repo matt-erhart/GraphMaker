@@ -29,7 +29,7 @@ class LinkOptions extends React.Component {
         const {linkOptions} = this.props; //maybe rename floating menus?
         return (
             <span style={{ left: linkOptions.left, top: linkOptions.top, position: 'absolute' }}>
-        <input autoFocus value={links[linkOptions.id].label} placeholder="Link label then enter."
+        <input autoFocus value={links[linkOptions.id].label} placeholder="Label or delete."
             
             onChange={e => {
                 const linkToUpdate = links[linkOptions.id];
@@ -44,13 +44,12 @@ class LinkOptions extends React.Component {
                 if (e.key === 'Enter' || e.key === 'Esc') {
                     this.props.setLinkOptions({ })
                 }
+                if (e.key === 'Delete'){
+                    this.props.removeLink(linkOptions.id)
+                    this.props.setLinkOptions({ })
+                }
             }}
             type="text" />
-            <button  title="delete link" onClick={e =>{ 
-                console.log('button-------------------------------------------------------------')
-                this.props.removeLink(linkOptions.id)
-                this.props.setLinkOptions({ })
-                }}>X</button>
             </span>
         )
     } 
