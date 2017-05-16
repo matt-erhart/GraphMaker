@@ -58,6 +58,7 @@ const publishClientXY = (rxActionName, e, node) => {
 function mapStateToProps(state) {
   return { 
     panZoomSize: state.panZoomSize,
+    linkStart: state.interactionStart.linkStart
  }
 }
 
@@ -82,7 +83,7 @@ class NodeDiv extends React.Component {
     return (
       <NodeDivCss key={node.id} style={{ left: x, top: y }} 
       onContextMenu={e => e.stopPropagation()}
-      onMouseUp  ={e => { publishClientXY(e$.linkUp.str, e, node) }}
+      onMouseUp={e => { publishClientXY(e$.linkUp.str, e, node) }}
       >
        <MenuDivCss >
         <MenuItemCss style={{ cursor: 'move' }} title="move node" className="material-icons"
@@ -121,8 +122,18 @@ class NodeDiv extends React.Component {
             }
           }}
           onMouseUp={e => { 
-            e.stopPropagation(); rxBus.next({ type: e$.mouseUp.str, id: node.id })}
-          }>
+            e.stopPropagation(); rxBus.next({ type: e$.mouseUp.str, id: node.id })
+            e.currentTarget.style.backgroundColor = '#2C6CC3';
+            }
+          }
+          onMouseEnter={e=>{
+            if (this.props.linkStart.hasOwnProperty('x2') & this.props.linkStart.nodeID !== node.id){
+              e.currentTarget.style.backgroundColor = 'darkgreen';
+            }
+          }}
+          onMouseLeave={e=>{
+            e.currentTarget.style.backgroundColor = '#2C6CC3';
+          }}
         ></TextArea>
 
       </NodeDivCss>

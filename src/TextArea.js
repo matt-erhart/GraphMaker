@@ -1,7 +1,7 @@
 import React from 'react';
 import styled from 'styled-components'
 import TextareaAutosize from 'react-autosize-textarea';
-
+import PropTypes from 'prop-types'
 const TextAreaCss = styled(TextareaAutosize)`
   display:block;
   box-sizing: padding-box;
@@ -25,4 +25,5 @@ const TextAreaCss = styled(TextareaAutosize)`
       box-shadow:2px 2px 8px rgba(0,0,0,.3);
   }
     `
+
 export default TextAreaCss;
