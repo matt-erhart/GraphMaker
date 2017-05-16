@@ -18,10 +18,10 @@ const moveSelectedNodes = (state, action) => {
 
 const updateNodes = (state, action) => { //selected nodes or all nodes
     const {updates, updateSelected} = action; // e.g. {color: 'blue', category: 'cause'}
-    const selectedNodes = updateSelected? _.filter(state.nodes, {'selected': true}) : state.nodes
-    const updatedNodes = _.map(selectedNodes, node => {
-        return {...node, ...updates} 
-    })
+    const selectedOrAllNodes = updateSelected? _.filter(state.nodes, {'selected': true}) : state.nodes; //just selected or all nodes
+    const updatedNodes = _.reduce(selectedOrAllNodes, (acc, node) => {
+        return Object.assign({}, acc, {[node.id]: {...node, ...updates} })
+    }, {})
     return {...state, nodes: {...state.nodes, ...updatedNodes}};
 }
 
