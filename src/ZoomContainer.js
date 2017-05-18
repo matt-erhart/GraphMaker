@@ -3,7 +3,7 @@ import styled from 'styled-components'
 import Rx from 'rxjs'
 import { rxBus, e$ } from './rxBus';
 import { connect } from 'react-redux';
-
+import _ from 'lodash'
 export const ZoomDivContainer = styled.div`
   overflow: hidden;
   border: 1px solid black;
@@ -45,7 +45,12 @@ class ZoomContainer extends React.Component {
           })
         }}
         onMouseUp={e => { e$Out(e$.mouseUp.str, e) }}
-        onWheel={e => { rxBus.next({ type: e$.mouseWheel.str, deltaY: e.nativeEvent.deltaY }) }} >
+        onWheel={e => {
+          
+          if (!_.isString(e.target.className) || !e.target.className.includes("Select-")) {
+            rxBus.next({ type: e$.mouseWheel.str, deltaY: e.nativeEvent.deltaY })
+          }
+        }} >
 
         <ZoomDiv panX={panX} panY={panY} zoomScaleFactor={zoomScaleFactor}
           width={graphWidth} height={graphHeight}> 

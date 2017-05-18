@@ -4,14 +4,17 @@ import { rxBus, e$ } from './rxBus';
 import TextArea from './TextArea'
 import _ from 'lodash'
 import { connect } from 'react-redux';
-
+import uniqueLinkTags from './selector_uniqueLinkTags'
+import { Creatable } from 'react-select';
 
 function mapStateToProps(state) {
     return {
         graph: state.graph,
         panZoomSize: state.panZoomSize,
         interactionStart: state.interactionStart,
-        linkOptions: state.linkOptions
+        linkOptions: state.linkOptions,
+        uniqueLinkTags:  uniqueLinkTags(state)
+
     }
 }
 
@@ -27,9 +30,31 @@ class LinkOptions extends React.Component {
     render(){
         const {links, nodes} = this.props.graph;
         const {linkOptions} = this.props; //maybe rename floating menus?
+        const link = links[linkOptions.id]; 
+        const uniqueLinkTags = this.props.uniqueLinkTags.map(x=>({label: x, value: x}));
+        const currentTags = link.tags? link.tags.map(x=>({label: x, value: x})) : [];
+
         return (
-            <span style={{ left: linkOptions.left, top: linkOptions.top, position: 'absolute' }}>
-        <input autoFocus value={links[linkOptions.id].label} placeholder="Label or delete."
+            <span style={{ left: linkOptions.left, top: linkOptions.top, position: 'absolute', width: '150px' }}>
+                   <Creatable autofocus multi placeholder="Link tags" value={currentTags}
+				options={uniqueLinkTags} onChange={value => this.props.setLink({...link, tags: value.map(x=>x.value)})} 
+                onBlur={e => {
+                    this.props.setLinkOptions({})
+                }}
+                onWheel={e=>{e=> e.stopPropagation()}}
+                onScroll={e=>{e=> e.stopPropagation()}}
+                
+                />
+
+            </span>
+        )
+    } 
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(LinkOptions)
+
+
+        /*<input autoFocus value={links[linkOptions.id].label} placeholder="Label or delete."
             
             onChange={e => {
                 const linkToUpdate = links[linkOptions.id];
@@ -49,10 +74,4 @@ class LinkOptions extends React.Component {
                     this.props.setLinkOptions({ })
                 }
             }}
-            type="text" />
-            </span>
-        )
-    } 
-}
-
-export default connect(mapStateToProps, mapDispatchToProps)(LinkOptions)
+            type="text" />*/

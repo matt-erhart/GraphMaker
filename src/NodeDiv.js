@@ -84,7 +84,7 @@ class NodeDiv extends React.Component {
     const {node} = this.props; //required
     const {x,y} = node;
     const uniqueNodeTags = this.props.uniqueNodeTags.map(x=>({label: x, value: x}));
-    const currentTags = node.tags.map(x=>({label: x, value: x}));
+    const currentTags = node.tags? node.tags.map(x=>({label: x, value: x})) : [];
     return (
       <NodeDivCss key={node.id} style={{ left: x, top: y }} 
       onContextMenu={e => e.stopPropagation()}

@@ -144,7 +144,7 @@ const previewLink = (link1, moveData) => {
     store.dispatch({type: 'SET_LINK_START', linkStart: newLink})
 }
 
-const newLink = (source, target) => ({ id: 'link-' + uid.sync(8), source, target, label: '', tags:[''] });
+const newLink = (source, target) => ({ id: 'link-' + uid.sync(8), source, target, label: '', tags:[] });
 const setLink = (link1, click2) => {
     if (click2.hasOwnProperty('id') && click2.id.length > 0 && click2.id !== link1.id) {
         let link = newLink(link1.id, click2.id)
