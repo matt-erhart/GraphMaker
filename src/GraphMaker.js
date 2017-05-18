@@ -7,6 +7,8 @@ import Line from './Line'
 import LinkOptions from './LinkOptions'
 import { firebaseConnect, isLoaded, isEmpty, dataToJS } from 'react-redux-firebase'
 import GraphIO from './GraphIO'
+import Select from 'react-select';
+import 'react-select/dist/react-select.css';
 
 function mapStateToProps(state) {
     return {
@@ -23,6 +25,7 @@ function mapDispatchToProps(dispatch) {
         setLinkOptions: (linkOptions) => dispatch({ type: 'SET_LINK_OPTIONS', linkOptions })
     }
 }
+
 
 class GraphMaker extends React.Component {
     componentWillMount() {
@@ -78,6 +81,7 @@ class GraphMaker extends React.Component {
 
                 </ZoomContainer>
                 <GraphIO></GraphIO>
+                
             </div>
         )
     }

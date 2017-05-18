@@ -5,6 +5,9 @@ import TextArea from './TextArea'
 import _ from 'lodash'
 import { connect } from 'react-redux';
 import ReactDOM from 'react-dom'
+import Select from 'react-select';
+import { Creatable } from 'react-select';
+import uniqueNodeTags from './selector_uniqueNodeTags'
 
 const NodeDivCss = styled.div`
   position: absolute;
@@ -58,7 +61,8 @@ const publishClientXY = (rxActionName, e, node) => {
 function mapStateToProps(state) {
   return { 
     panZoomSize: state.panZoomSize,
-    linkStart: state.interactionStart.linkStart
+    linkStart: state.interactionStart.linkStart,
+    uniqueNodeTags:  uniqueNodeTags(state)
  }
 }
 
@@ -79,7 +83,8 @@ class NodeDiv extends React.Component {
   render() {
     const {node} = this.props; //required
     const {x,y} = node;
-
+    const uniqueNodeTags = this.props.uniqueNodeTags.map(x=>({label: x, value: x}));
+    const currentTags = node.tags.map(x=>({label: x, value: x}));
     return (
       <NodeDivCss key={node.id} style={{ left: x, top: y }} 
       onContextMenu={e => e.stopPropagation()}
@@ -135,6 +140,8 @@ class NodeDiv extends React.Component {
             e.currentTarget.style.backgroundColor = '#2C6CC3';
           }}
         ></TextArea>
+        <Creatable multi placeholder="Node tags" value={currentTags}
+				options={uniqueNodeTags} onChange={value => this.props.setNode({...node, tags: value.map(x=>x.value)})} />
 
       </NodeDivCss>
     )

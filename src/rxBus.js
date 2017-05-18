@@ -84,7 +84,10 @@ const clickNotDrag$ = downUp$.bufferWhen(() => downUp$.debounceTime(250)).filter
   
 
 //NODE INTERACTIONS
-const newNode = (click) => ({ id: 'node-' + uid.sync(8), x: click.offsetX-78, y: click.offsetY-23, text: '', selected: false });
+const newNode = (click) => ({ id: 'node-' + uid.sync(8),
+ x: click.offsetX-78, y: click.offsetY-23,
+ text: '', selected: false, 
+ tags:['snippet']});
 let addNode$ = e$.rightClickBG.obs.do(click => {
     let node = newNode(click);
     store.dispatch({type: 'SET_NODE', node })
@@ -141,7 +144,7 @@ const previewLink = (link1, moveData) => {
     store.dispatch({type: 'SET_LINK_START', linkStart: newLink})
 }
 
-const newLink = (source, target) => ({ id: 'link-' + uid.sync(8), source, target, label: '' });
+const newLink = (source, target) => ({ id: 'link-' + uid.sync(8), source, target, label: '', tags:[''] });
 const setLink = (link1, click2) => {
     if (click2.hasOwnProperty('id') && click2.id.length > 0 && click2.id !== link1.id) {
         let link = newLink(link1.id, click2.id)
