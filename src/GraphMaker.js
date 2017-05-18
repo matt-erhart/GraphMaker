@@ -62,7 +62,7 @@ class GraphMaker extends React.Component {
                             let source = nodes[link.source];
                             let target = nodes[link.target];
                             return (
-                                <Line key={link.id} x1={source.x} y1={source.y} x2={target.x} y2={target.y}
+                                <Line key={link.id} x1={source.x} y1={source.y} x2={target.x} y2={target.y} tags={link.tags}
                                     id={link.id} xShift={75} yShift={10} markerMid="url(#markerArrow1)" label={link.label}
                                     onClick={e => {
                                         const { offsetX, offsetY } = e.nativeEvent

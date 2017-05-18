@@ -21,7 +21,7 @@ const PathCss = styled.path`
 const pathMaker = d3.line().x(d=>d.x).y(d=>d.y);
 
 const Line = (props) => {
-    const {x1, x2, y1, y2, id, onClick, xShift, yShift, label} = props;
+    const {x1, x2, y1, y2, id, onClick, xShift, yShift, label, tags} = props;
     const data = [{x:x1+xShift, y:y1+yShift}, {x:x2+xShift, y:y2+yShift}]
     const midX = (x1+x2+xShift*2)/2;
     const midY = (y1+y2+yShift*2)/2;
@@ -35,14 +35,18 @@ const Line = (props) => {
                 }
                 }
             />
-            <text  x={midX} y={midY} textAnchor="middle" style={{stroke: 'black', cursor: 'default', userSelect: 'none'}}
-                onClick={e => {onClick(e); e.stopPropagation()}}
+            <text x={midX} y={midY} textAnchor="middle" style={{stroke: 'black', cursor: 'default', userSelect: 'none'}} dy={`1em`} 
+            onClick={e => {onClick(e); e.stopPropagation()}}
                 onMouseDown={e => {onClick(e); e.preventDefault(); e.stopPropagation()}}
                 onContextMenu={e => {
                     e.preventDefault();
                     e.stopPropagation()
                 }}>
-                {label}
+                {tags && tags.map((tag, index) => (
+                    <tspan key={tag + index} x={midX} y={midY} dy={`${index * 1.1}em`} style={{ "alignmentBaseline": "hanging" }}>
+                        {tag}
+                    </tspan>
+                ))}
             </text>
         </g>
         
