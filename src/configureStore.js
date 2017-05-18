@@ -15,7 +15,8 @@ let rootReducer = combineReducers({
   panZoomSize: reducers.panZoomSize,
   interactionStart: reducers.interactionStart,
   linkOptions: reducers.linkOptions,
-  firebase: firebaseStateReducer
+  firebase: firebaseStateReducer,
+  sidePanel: reducers.sidePanel
 })
 
 let initialState = {

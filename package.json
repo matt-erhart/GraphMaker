@@ -6,17 +6,15 @@
     "react-scripts": "0.9.5"
   },
   "dependencies": {
-    "cytoscape": "^3.0.0",
     "d3": "^4.8.0",
-    "draft-js": "^0.10.0",
     "firebase": "^3.9.0",
     "jest": "^20.0.0",
+    "material-ui": "^0.18.1",
     "prop-types": "^15.5.8",
     "ramda": "^0.23.0",
     "re-base": "^2.7.0",
     "react": "^15.5.4",
     "react-autosize-textarea": "^0.4.3",
-    "react-d3-brush": "^1.1.0",
     "react-dom": "^15.5.4",
     "react-redux": "^5.0.4",
     "react-redux-firebase": "^1.4.0-rc.2",

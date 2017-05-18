@@ -9,6 +9,10 @@ import { firebaseConnect, isLoaded, isEmpty, dataToJS } from 'react-redux-fireba
 import GraphIO from './GraphIO'
 import Select from 'react-select';
 import 'react-select/dist/react-select.css';
+import SidePanel from './SidePanel'
+import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
+import RaisedButton from 'material-ui/RaisedButton';
+
 
 function mapStateToProps(state) {
     return {
@@ -22,7 +26,9 @@ function mapStateToProps(state) {
 function mapDispatchToProps(dispatch) {
     return {
         setGraph: (graph) => dispatch({ type: 'SET_GRAPH', graph }),
-        setLinkOptions: (linkOptions) => dispatch({ type: 'SET_LINK_OPTIONS', linkOptions })
+        setLinkOptions: (linkOptions) => dispatch({ type: 'SET_LINK_OPTIONS', linkOptions }),
+        toggleSidePanel: () => dispatch({ type: 'TOGGLE_PANEL' }),
+
     }
 }
 
@@ -39,6 +45,9 @@ class GraphMaker extends React.Component {
 
         return (
             <div >
+                  <RaisedButton onClick={e=>{this.props.toggleSidePanel()}}>Side Panel</RaisedButton>
+                    <SidePanel></SidePanel>
+
                 <ZoomContainer>
                     <svg width={graphWidth} height={graphHeight}>
                         <defs>

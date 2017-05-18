@@ -3,6 +3,7 @@ import GraphMaker from './GraphMaker';
 import PropTypes from 'prop-types';
 import configureStore from './configureStore'; //this is where redux state starts
 import { Provider } from 'react-redux'; //passes store into the app
+import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 
 export const store = configureStore();
 
@@ -10,7 +11,9 @@ export const store = configureStore();
 
  const Root = ({ store }) => (
   <Provider store={store}>
-    <GraphMaker/>
+    <MuiThemeProvider>
+      <GraphMaker/>
+    </MuiThemeProvider>
   </Provider>
 );
 

@@ -92,3 +92,10 @@ export const selected = (state = {nodes: [], links:[]}, action) => {
         default: return state
     }
 }
+
+export const sidePanel = (state = {showPanel: false}, action) => {
+    switch (action.type) {
+        case 'TOGGLE_PANEL': return {showPanel: !state.showPanel}
+        default: return state
+    }
+}
