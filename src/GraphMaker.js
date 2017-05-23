@@ -16,10 +16,10 @@ import * as d3Poly from 'd3-polygon'
 
 function mapStateToProps(state) {
     return {
-        graph: state.graph,
+        graph:       state.graph,
         panZoomSize: state.panZoomSize,
         interactionStart: state.interactionStart,
-        linkOptions: state.linkOptions
+        linkOptions:  state.linkOptions
     }
 }
 
@@ -45,9 +45,14 @@ class GraphMaker extends React.Component {
         // const hull = d3Poly.polygonHull([[100, 200], [200, 100], [100, 100], [200,200], [150, 150]])
         let hulls = []
         if (groups && Object.keys(groups).length > 0) {
-                        console.log(groups)
             const hullFromGroup = group => d3Poly.polygonHull(group.nodeIDs.map(id => [nodes[id].x+75, nodes[id].y+20]))
-            const hullPath = hull => hull.splice(1).reduce((acc, d) =>  acc + 'L' + d.join(), 'M' + hull[0].join()) + 'Z';
+            const hullPath = hull => {
+                if (hull !== undefined && hull !== null) {
+                    return hull.splice(1).reduce((acc, d) =>  acc + 'L' + d.join(), 'M' + hull[0].join()) + 'Z'
+                } else {
+                    // return 'M' + hull[0].join() + 'L' + hull[1].join(); //2 point, no hull
+                }
+            }
             hulls = _.map(groups, group => ({id: group.id, hullPath: hullPath(hullFromGroup(group)), color: group.color})); //
 
         }
@@ -58,7 +63,7 @@ class GraphMaker extends React.Component {
 
                 <ZoomContainer>
                     <svg width={graphWidth} height={graphHeight}>
-                        {hulls && hulls.map(hull => <path d={hull.hullPath} fill={hull.color} stroke={hull.color} strokeWidth='150' strokeLinejoin='round' opacity={.5}></path>)}
+                        {hulls && hulls.map(hull => <path key={hull.id} d={hull.hullPath} fill={hull.color} stroke={hull.color} strokeWidth='150' strokeLinejoin='round' opacity={.5}></path>)}
                         <defs>
                             <marker id="markerArrow1" refX="-30" refY="5" viewBox="0 0 10 10" style={{'stroke':'none', fill: 'grey'}}
                                 markerWidth="3" markerHeight="3" orient="auto">

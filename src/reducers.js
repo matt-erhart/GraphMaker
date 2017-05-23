@@ -1,11 +1,13 @@
 import _ from 'lodash'
 import uid from 'uid-safe';
 
-const removeNodeAndItsLinks = (state, action) => {
+const removeNodeAndItsLinks = (state, action) => { //todo: consolidate node removal logic for clicking X and delete key
     const linksWithNode = _.filter(state.links, link => _.includes(link, action.node.id));
     const links = _.omit(state.links, _.map(linksWithNode, link => link.id));
     const nodes = _.omit(state.nodes, action.node.id);
-    return {...state, nodes, links}
+    const groups = _.map(state.groups, group => ({...group, nodeIDs: _.without(group.nodeIDs, action.node.id)}));
+
+    return {...state, nodes, links, groups}
 }
 
 const moveSelectedNodes = (state, action) => {
@@ -26,16 +28,24 @@ const updateNodes = (state, action) => { //selected nodes or all nodes
     return {...state, nodes: {...state.nodes, ...updatedNodes}};
 }
 
-const removeSelected = (state) => {
+const removeSelected = (state, action) => {
     const selectedNodes = _.filter(state.nodes, {'selected': true});
-    return _.reduce(selectedNodes,  (acc, node) => {
+    const selectedIDs = _.map(selectedNodes, node => node.id)
+    const withoutNodes = _.reduce(selectedNodes,  (acc, node) => {
         let action = {node};
         return removeNodeAndItsLinks(acc, action)
     }, state)
+
+    const updatedGroups = _.map(state.groups, group => ({...group, nodeIDs: _.without(group.nodeIDs, ...selectedIDs)}));
+    console.log(selectedIDs, withoutNodes, updatedGroups)
+
+    return {...withoutNodes, groups: updatedGroups}
+
 }
 
 const createGroup = (state, action) => {
     const selectedNodes = _.filter(state.nodes, {'selected': true});
+    if (Object.keys(selectedNodes).length < 2) return state;
     const nodeIDsInGroup = _.map(selectedNodes, node => node.id);
     const groupID = uid.sync(8);
     return {...state, groups: {...state.groups, [groupID]: {id: groupID, nodeIDs: nodeIDsInGroup, text:'', selected:false, tags:[], color: action.color }}}
