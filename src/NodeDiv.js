@@ -43,7 +43,7 @@ const MenuItemCss = styled.i`
 
 `
 
-const RemoveNode = styled(MenuItemCss)`
+export const RemoveNode = styled(MenuItemCss)`
   cursor: default;
   color: black;
   &:hover {

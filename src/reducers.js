@@ -25,11 +25,14 @@ const updateNodes = (state, action) => { //selected nodes or all nodes
     return {...state, nodes: {...state.nodes, ...updatedNodes}};
 }
 
-// const updateNode = (state, action) => { //todo: consolidate set/update for selected/not
-//     const {nodes, selected} = action;
-//     const updatedNode = {...node, selected}
-//     return {...state, nodes: {...state.nodes, ...updatedNode}};
-// }
+const removeSelected = (state) => {
+    const selectedNodes = _.filter(state.nodes, {'selected': true});
+    return _.reduce(selectedNodes,  (acc, node) => {
+        let action = {node};
+        return removeNodeAndItsLinks(acc, action)
+    }, state)
+
+}
 
 export const graph = (state = { nodes: {}, links: {} }, action) => {
     switch (action.type) {
@@ -40,6 +43,7 @@ export const graph = (state = { nodes: {}, links: {} }, action) => {
         case 'MOVE_SELECTED_NODES': return moveSelectedNodes(state, action);
         case 'SET_LINK': return {...state, links: {...state.links, [action.link.id]: action.link}}
         case 'REMOVE_NODE': return removeNodeAndItsLinks(state, action)
+        case 'REMOVE_SELECTED_NODES': return removeSelected(state, action)
         case 'REMOVE_LINK': return {...state, links: _.omit(state.links, action.id)}        
         default: return state
     }
@@ -93,7 +97,7 @@ export const selected = (state = {nodes: [], links:[]}, action) => {
     }
 }
 
-export const sidePanel = (state = {showPanel: false}, action) => {
+export const sidePanel = (state = {showPanel: true}, action) => {
     switch (action.type) {
         case 'TOGGLE_PANEL': return {showPanel: !state.showPanel}
         default: return state

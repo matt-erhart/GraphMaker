@@ -6,7 +6,7 @@ import _ from 'lodash'
 import { connect } from 'react-redux';
 import uniqueLinkTags from './selector_uniqueLinkTags'
 import { Creatable } from 'react-select';
-
+import {RemoveNode} from './NodeDiv'
 function mapStateToProps(state) {
     return {
         graph: state.graph,
@@ -36,16 +36,15 @@ class LinkOptions extends React.Component {
 
         return (
             <span style={{ left: linkOptions.left, top: linkOptions.top, position: 'absolute', width: '150px' }}>
-                   <Creatable autofocus multi placeholder="Link tags" value={currentTags}
+                <RemoveNode title='DELETE Link' onClick={e=>{console.log('X');this.props.removeLink(linkOptions.id)}} className="material-icons">clear</RemoveNode>
+
+                <Creatable autofocus multi placeholder="Link tags" value={currentTags}
 				options={uniqueLinkTags} onChange={value => this.props.setLink({...link, tags: value.map(x=>x.value)})} 
                 onBlur={e => {
+                    console.log(e.target)
                     this.props.setLinkOptions({})
                 }}
-                onWheel={e=>{e=> e.stopPropagation()}}
-                onScroll={e=>{e=> e.stopPropagation()}}
-                
                 />
-
             </span>
         )
     } 

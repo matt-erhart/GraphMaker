@@ -5,6 +5,9 @@ import _ from 'lodash';
 import uid from 'uid-safe';
 import * as d3qt from 'd3-quadtree'
 
+const keyup$ = Rx.Observable.fromEvent(window, 'keyup').do(x=>console.log(x));
+
+
 export let rxBus = new Rx.Subject();
 export let e$ = { //so we get autocomplete, e is events. $ is rxjs
     leftMouseUp: null,
@@ -30,6 +33,9 @@ const nodesInRectangle = (nodes, rect) => {
         return _.inRange(node.x, x, x2) && _.inRange(node.y, y, y2)
     })
 }
+
+//delete selected nodes
+const removeSelectedNodes$ = keyup$.filter(key=>key.code==='Delete').do(key=> store.dispatch({type: 'REMOVE_SELECTED_NODES'}))
 
 
 //const dragSelect
@@ -196,4 +202,4 @@ let zoom$ = e$.mouseWheel.obs
     })
 
 //each one of these listens for patterns, and we listen to them all with subscribe
-Rx.Observable.merge(addNode$, dnd$, addLink$, pan$, zoom$, clickNotDrag$, deSelectAll$, dragSelect$).subscribe();
+Rx.Observable.merge(addNode$, dnd$, addLink$, pan$, zoom$, clickNotDrag$, deSelectAll$, dragSelect$, removeSelectedNodes$).subscribe();
