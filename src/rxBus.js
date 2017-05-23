@@ -4,6 +4,7 @@ import { store } from './index';
 import _ from 'lodash';
 import uid from 'uid-safe';
 import * as d3qt from 'd3-quadtree'
+import * as d3Color from 'd3-color'
 
 const keyup$ = Rx.Observable.fromEvent(window, 'keyup').do(x=>console.log(x));
 
@@ -36,7 +37,11 @@ const nodesInRectangle = (nodes, rect) => {
 
 //delete selected nodes
 const removeSelectedNodes$ = keyup$.filter(key=>key.code==='Delete').do(key=> store.dispatch({type: 'REMOVE_SELECTED_NODES'}))
-
+const createGroup$ = keyup$.filter(key=>{return (key.key==='g' && key.altKey)})
+                                .do(key=> {
+                                        const color = d3Color.cubehelix(Math.random()*350,.6,.6).toString();
+                                        store.dispatch({type: 'CREATE_GROUP', color})
+                                    })
 
 //const dragSelect
 let nodesInRectPrev = {};
@@ -202,4 +207,4 @@ let zoom$ = e$.mouseWheel.obs
     })
 
 //each one of these listens for patterns, and we listen to them all with subscribe
-Rx.Observable.merge(addNode$, dnd$, addLink$, pan$, zoom$, clickNotDrag$, deSelectAll$, dragSelect$, removeSelectedNodes$).subscribe();
+Rx.Observable.merge(addNode$, dnd$, addLink$, pan$, zoom$, clickNotDrag$, deSelectAll$, dragSelect$, removeSelectedNodes$, createGroup$).subscribe();

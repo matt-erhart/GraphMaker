@@ -1,10 +1,11 @@
 import _ from 'lodash'
+import uid from 'uid-safe';
 
 const removeNodeAndItsLinks = (state, action) => {
     const linksWithNode = _.filter(state.links, link => _.includes(link, action.node.id));
     const links = _.omit(state.links, _.map(linksWithNode, link => link.id));
     const nodes = _.omit(state.nodes, action.node.id);
-    return {nodes, links}
+    return {...state, nodes, links}
 }
 
 const moveSelectedNodes = (state, action) => {
@@ -31,10 +32,16 @@ const removeSelected = (state) => {
         let action = {node};
         return removeNodeAndItsLinks(acc, action)
     }, state)
-
 }
 
-export const graph = (state = { nodes: {}, links: {} }, action) => {
+const createGroup = (state, action) => {
+    const selectedNodes = _.filter(state.nodes, {'selected': true});
+    const nodeIDsInGroup = _.map(selectedNodes, node => node.id);
+    const groupID = uid.sync(8);
+    return {...state, groups: {...state.groups, [groupID]: {id: groupID, nodeIDs: nodeIDsInGroup, text:'', selected:false, tags:[], color: action.color }}}
+}
+
+export const graph = (state = { nodes: {}, links: {}, groups: {} }, action) => {
     switch (action.type) {
         case 'SET_GRAPH': return action.graph
         case 'GET_LOCAL_STORAGE_GRAPH': return action.graph
@@ -45,6 +52,7 @@ export const graph = (state = { nodes: {}, links: {} }, action) => {
         case 'REMOVE_NODE': return removeNodeAndItsLinks(state, action)
         case 'REMOVE_SELECTED_NODES': return removeSelected(state, action)
         case 'REMOVE_LINK': return {...state, links: _.omit(state.links, action.id)}        
+        case 'CREATE_GROUP': return createGroup(state, action)
         default: return state
     }
 }

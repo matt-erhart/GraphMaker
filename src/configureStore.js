@@ -20,7 +20,7 @@ let rootReducer = combineReducers({
 })
 
 let initialState = {
-  graph:{links: {}, nodes: {}},
+  graph:{links: {}, nodes: {}, groups: {}},
   panZoomSize: {zoomScaleFactor: 1, panX: 0, panY: 0, panStart: { x: 0, y: 0 },
   graphWidth: 1500, graphHeight: 1000},
   interactionStart: { dragStart: { x: 0, y: 0 }, linkStart: { nodeID: '' } },
