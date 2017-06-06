@@ -2,7 +2,19 @@ import { createStore, applyMiddleware, combineReducers, compose } from 'redux';
 import { reactReduxFirebase, firebaseStateReducer } from 'react-redux-firebase'
 import { composeWithDevTools } from 'redux-devtools-extension';
 import * as reducers from './reducers';
+import * as firebase from 'firebase'
 // import { reducer as formReducer } from 'redux-form'
+// Firebase config
+const firebaseConfig = {
+    apiKey: "AIzaSyDOBWE5a-0bO8k_hBbfJjXlr2dfRAMfkK4",
+    authDomain: "knowledgecollector-20674.firebaseapp.com",
+    databaseURL: "https://knowledgecollector-20674.firebaseio.com",
+    projectId: "knowledgecollector-20674",
+    storageBucket: "knowledgecollector-20674.appspot.com",
+    messagingSenderId: "441463277516"
+}
+export var fire = firebase.initializeApp(firebaseConfig);
+export var storageRef = firebase.storage().ref();
 
 const configureStore = () => {
   const middlewares = [];
@@ -25,16 +37,6 @@ let initialState = {
   graphWidth: 1500, graphHeight: 1000},
   interactionStart: { dragStart: { x: 0, y: 0 }, linkStart: { nodeID: '' } },
   linkOptions: {}
-}
-
-// Firebase config
-const firebaseConfig = {
-    apiKey: "AIzaSyD2f07HcJOim-7AQGBU6Tdn2zNzhizrk20",
-    authDomain: "graphmaker-4f5f7.firebaseapp.com",
-    databaseURL: "https://graphmaker-4f5f7.firebaseio.com",
-    projectId: "graphmaker-4f5f7",
-    storageBucket: "graphmaker-4f5f7.appspot.com",
-    messagingSenderId: "148125882055"
 }
 
 // react-redux-firebase options

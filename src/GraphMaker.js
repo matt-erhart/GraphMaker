@@ -28,7 +28,6 @@ function mapDispatchToProps(dispatch) {
         setGraph: (graph) => dispatch({ type: 'SET_GRAPH', graph }),
         setLinkOptions: (linkOptions) => dispatch({ type: 'SET_LINK_OPTIONS', linkOptions }),
         toggleSidePanel: () => dispatch({ type: 'TOGGLE_PANEL' }),
-
     }
 }
 

@@ -8,6 +8,12 @@ import ActionInfo from 'material-ui/svg-icons/action/info';
 import Divider from 'material-ui/Divider';
 import Subheader from 'material-ui/Subheader';
 import _ from 'lodash'
+import { firebaseConnect, isLoaded, isEmpty, dataToJS } from 'react-redux-firebase'
+import * as firebase from 'firebase';
+
+import {fire, storageRef} from './configureStore'
+
+
 function mapStateToProps(state) {
   return {
     nodes: state.graph.nodes,
@@ -25,11 +31,28 @@ function mapDispatchToProps(dispatch) {
 
 
 class SidePanel extends React.Component {
+  state = {
+    pathsLoaded: false,
+    imgSrcs: {}
+  }
+  componentDidMount(){
+    
+  }
+  componentDidUpdate(){
+      _.forEach(this.props.snippets, (snip,key) => {
+        if (!_.includes(_.keys(this.state.imgSrcs), key)){
+          console.log('snip', snip, key)
+          const ref = storageRef.child(snip.imgPath);
+            ref.getDownloadURL().then((url) => {
+            this.setState({imgSrcs: {...this.state.imgSrcs, [key]: url}})  
+          });
+        }
+      })      
+  }
 
   render() {
-    const chunks = _.filter(this.props.nodes, node => _.includes(node.tags, 'chunk'))
-    const snippets = _.filter(this.props.nodes, node => _.includes(node.tags, 'snippet'))
-    const sources = _.filter(this.props.nodes, node => _.includes(node.tags, 'source'))
+    const snippets = this.props.snippets;
+    console.log(this.state.imgSrcs)
     return (
       <div>
 
@@ -38,26 +61,18 @@ class SidePanel extends React.Component {
             label="Toggle Drawer"
             onClick={e=>{this.props.toggleSidePanel()}}
           />
-          <List>
-            <Subheader>Chunks</Subheader>
-            {chunks && _.map(chunks, (node, i) => {
-              return <ListItem key={i} onClick={e=>{this.props.setNode({...node, selected: true})}} >{node.text}</ListItem>
-            })}
-          </List>
           <Divider></Divider>
           <List>
             <Subheader>Snippets</Subheader>
-            {snippets && _.map(snippets, (node, i) => {
-              return <ListItem onClick={e=>{this.props.setNode({...node, selected: true})}} key={i}>{node.text}</ListItem>
+            {snippets && _.map(snippets, (snip, key) => {
+              return <ListItem onClick={e=>{}} key={key}>{snip.title}
+                {this.state.imgSrcs[key] && <img src={this.state.imgSrcs[key]} alt="" height="100" width="200"/>}
+                <p>{snip.snippet}</p>
+                <p>{snip.comment}</p>
+              </ListItem>
             })}
           </List>
           <Divider></Divider>
-          <List>
-            <Subheader>Sources</Subheader>
-            {sources && _.map(sources, (node, i) => {
-              return <ListItem onClick={e=>{this.props.setNode({...node, selected: true})}} key={i}>{node.text}</ListItem>
-            })}
-          </List>
 
 
 
@@ -67,4 +82,11 @@ class SidePanel extends React.Component {
   }
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(SidePanel)
+const connected = connect(mapStateToProps, mapDispatchToProps)(SidePanel)
+const fireBasedComponent = firebaseConnect(['/snippets'])(connected)
+
+export default connect(
+  ({firebase}) => ({
+    snippets: dataToJS(firebase, 'snippets'),
+  })
+)(fireBasedComponent)
