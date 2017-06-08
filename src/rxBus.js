@@ -95,9 +95,9 @@ const clickNotDrag$ = downUp$.bufferWhen(() => downUp$.debounceTime(250)).filter
   
 
 //NODE INTERACTIONS
-const newNode = (click) => ({ id: 'node-' + uid.sync(8),
+export const newNode = (click, text='') => ({ id: 'node-' + uid.sync(8),
  x: click.offsetX-78, y: click.offsetY-23,
- text: '', selected: false, 
+ text: text, selected: false, 
  tags:['snippet']});
 let addNode$ = e$.rightClickBG.obs.do(click => {
     let node = newNode(click);

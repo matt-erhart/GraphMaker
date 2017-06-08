@@ -1,4 +1,4 @@
-import _ from 'lodash'
+import _ from 'lodash';
 import uid from 'uid-safe';
 
 const removeNodeAndItsLinks = (state, action) => { //todo: consolidate node removal logic for clicking X and delete key
@@ -67,10 +67,6 @@ export const graph = (state = { nodes: {}, links: {}, groups: {} }, action) => {
     }
 }
 
-const panZoomSizeDefaults = {
-    zoomScaleFactor: 1, panX: 0, panY: 0,
-    graphWidth: 1500, graphHeight: 1000,
-}
 export const panZoomSize = (state = {
     zoomScaleFactor: 1, panX: 0, panY: 0,
     graphWidth: 1500, graphHeight: 1000},
@@ -104,8 +100,9 @@ export const linkOptions = (state = {}, action) => {
     }
 }
 
-export const selected = (state = {nodes: [], links:[]}, action) => {
-    _.isArray(action.id)? '': console.error('id must be an array')
+/** @param {nodes: Array<node>, links: Array<link>} state*/
+/** @param {type: string, id: Array<string>} action*/
+export const selected = (state = {nodes: [], links:[] /*add groups*/}, action) => {
     switch (action.type) {
         case 'ADD_NODES': return     {...state, nodes: _.concat(state.nodes, action.id)}
         case 'REMOVE_NODES': return  {...state, nodes: _.without(state.nodes, action.id)} 

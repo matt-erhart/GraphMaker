@@ -40,7 +40,6 @@ const MenuItemCss = styled.i`
   &:hover {
     font-weight: 500;
   }
-
 `
 
 export const RemoveNode = styled(MenuItemCss)`

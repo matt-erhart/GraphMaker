@@ -1,17 +1,14 @@
 import React from 'react';
 import Drawer from 'material-ui/Drawer';
-import MenuItem from 'material-ui/MenuItem';
 import RaisedButton from 'material-ui/RaisedButton';
 import { connect } from 'react-redux';
 import { List, ListItem } from 'material-ui/List';
-import ActionInfo from 'material-ui/svg-icons/action/info';
 import Divider from 'material-ui/Divider';
 import Subheader from 'material-ui/Subheader';
 import _ from 'lodash'
-import { firebaseConnect, isLoaded, isEmpty, dataToJS } from 'react-redux-firebase'
-import * as firebase from 'firebase';
+import { firebaseConnect, dataToJS } from 'react-redux-firebase'
 
-import {fire, storageRef} from './configureStore'
+import {storageRef} from './configureStore'
 
 
 function mapStateToProps(state) {
@@ -65,7 +62,8 @@ class SidePanel extends React.Component {
           <List>
             <Subheader>Snippets</Subheader>
             {snippets && _.map(snippets, (snip, key) => {
-              return <ListItem onClick={e=>{}} key={key}>{snip.title}
+              return <ListItem onClick={e=>{}} key={key} draggable="true" onDragStart={e=>e.nativeEvent.dataTransfer.setData("comment", snip.comment)}>
+                {snip.title}
                 {this.state.imgSrcs[key] && <img src={this.state.imgSrcs[key]} alt="" height="100" width="200"/>}
                 <p>{snip.snippet}</p>
                 <p>{snip.comment}</p>

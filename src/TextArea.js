@@ -1,7 +1,5 @@
-import React from 'react';
 import styled from 'styled-components'
 import TextareaAutosize from 'react-autosize-textarea';
-import PropTypes from 'prop-types'
 const TextAreaCss = styled(TextareaAutosize)`
   display:block;
   box-sizing: padding-box;

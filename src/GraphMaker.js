@@ -13,7 +13,7 @@ import SidePanel from './SidePanel'
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 import RaisedButton from 'material-ui/RaisedButton';
 import * as d3Poly from 'd3-polygon'
-
+import {newNode} from './rxBus'
 function mapStateToProps(state) {
     return {
         graph:       state.graph,
@@ -28,6 +28,7 @@ function mapDispatchToProps(dispatch) {
         setGraph: (graph) => dispatch({ type: 'SET_GRAPH', graph }),
         setLinkOptions: (linkOptions) => dispatch({ type: 'SET_LINK_OPTIONS', linkOptions }),
         toggleSidePanel: () => dispatch({ type: 'TOGGLE_PANEL' }),
+        setNode: (node) => dispatch({type: 'SET_NODE', node })
     }
 }
 
@@ -60,8 +61,14 @@ class GraphMaker extends React.Component {
                   <RaisedButton onClick={e=>{this.props.toggleSidePanel()}}>Side Panel</RaisedButton>
                     <SidePanel></SidePanel>
 
-                <ZoomContainer>
-                    <svg width={graphWidth} height={graphHeight}>
+                <ZoomContainer >
+                    <svg width={graphWidth} height={graphHeight} onDragOver={e=>{e.preventDefault(); console.log('dragover', e)}} 
+                        onDrop={e=>{
+                            e.preventDefault(); 
+                             const comment = e.nativeEvent.dataTransfer.getData("comment")
+                             this.props.setNode(newNode(e.nativeEvent, comment));
+
+                             }}>
                         {hulls && hulls.map(hull => <path key={hull.id} d={hull.hullPath} fill={hull.color} stroke={hull.color} strokeWidth='150' strokeLinejoin='round' opacity={.5}></path>)}
                         <defs>
                             <marker id="markerArrow1" refX="-30" refY="5" viewBox="0 0 10 10" style={{'stroke':'none', fill: 'grey'}}
