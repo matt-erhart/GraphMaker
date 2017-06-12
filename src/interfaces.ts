@@ -33,6 +33,7 @@ interface edge { //any relationship between tags or nodes (including containment
   meta?: meta;
 }
 
+//nodes become tags
 interface node {
   id: nodeID;
   tags?: Array<tagID>;

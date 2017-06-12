@@ -85,7 +85,7 @@ class GraphMaker extends React.Component {
         >
           Side Panel
         </RaisedButton>
-        <SidePanel />
+        <SidePanel style={{width: 500}}/>
 
         <ZoomContainer>
           <svg
